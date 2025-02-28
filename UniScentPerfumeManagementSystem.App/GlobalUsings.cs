@@ -1,0 +1,14 @@
+﻿global using Microsoft.AspNetCore.Components.Authorization;
+global using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+global using System.Security.Claims;
+global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login;
+global using UniScentPerfumeManagementSystem.App.Services.Security;
+global using Microsoft.EntityFrameworkCore;
+global using MudBlazor.Services;
+global using UniScentPerfumeManagementSystem.App.Components;
+global using UniScentPerfumeManagementSystem.App.Services;
+global using UniScentPerfumeManagementSystem.Database.EFModels;
+global using UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
+global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
+global using UniScentPerfumeManagementSystem.Shared.DapperServices;
+global using UniScentPerfumeManagementSystem.Domain.Models;

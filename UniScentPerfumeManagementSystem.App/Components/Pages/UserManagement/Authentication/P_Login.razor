@@ -1,0 +1,174 @@
+﻿@page "/"
+@using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login
+@using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register
+@using UniScentPerfumeManagementSystem.Domain.Models
+@inject LoginService _loginService
+@inject RegisterService _registerService
+@inject NavigationManager Navigation
+@rendermode RenderMode.InteractiveServer
+
+<EditForm Model="_requestModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+            <div class="card-body">
+                @if (!_isRegister)
+                {
+                    <h1 class="h3 mb-3 fw-normal text-center">Sign In</h1>
+                    <div class="mb-3">
+                        <label class="form-label">UserName</label>
+                        <InputText class="form-control" @bind-Value="_requestModel.UserName" placeholder="Enter UserName" />
+                        <ValidationMessage For="@(() => _requestModel.UserName)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <InputText class="form-control" type=@password @bind-Value="_requestModel.Password" placeholder="Enter Password" />
+                            <button type="button" class="btn btn-outline-secondary" @onclick="PasswordVisibility" style="color: black;">
+                                <i class="@passwordIcon"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => _requestModel.Password)" class="text-danger" />
+                    </div>
+                    <button type="submit" class="btn text-white py-2 px-4" style="background-color: black; width: auto;">Sign In</button>
+                    <div class="text-center mt-3">
+                        <a href="javascript:void(0);" @onclick="() => ChangePage()" style="color: dodgerblue;">Don't have an account? Sign Up</a>
+                    </div>
+                }
+                else
+                {
+                    <h1 class="h3 mb-3 fw-normal text-center">Register</h1>
+                    <div class="mb-3">
+                        <label class="form-label">UserName</label>
+                        <InputText class="form-control" @bind-Value="_requestModel.UserName" placeholder="Enter UserName" />
+                        <ValidationMessage For="@(() => _requestModel.UserName)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="_requestModel.Email" placeholder="Enter Email" />
+                        <ValidationMessage For="@(() => _requestModel.Email)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone No</label>
+                        <InputText class="form-control" @bind-Value="_requestModel.PhoneNo" placeholder="Enter Phone Number" />
+                        <ValidationMessage For="@(() => _requestModel.PhoneNo)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <InputText class="form-control" type=@password @bind-Value="_requestModel.Password" placeholder="Enter Password" />
+                            <button type="button" class="btn btn-outline-secondary" @onclick="PasswordVisibility" style="color: black;">
+                                <i class="@passwordIcon"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => _requestModel.Password)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <InputText class="form-control" type=@cPassword @bind-Value="_requestModel.ConfirmPassword" placeholder="Confirm Password" />
+                            <button type="button" class="btn btn-outline-secondary" @onclick="ConfirmPasswordVisibility" style="color: black;">
+                                <i class="@cPasswordIcon"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => _requestModel.ConfirmPassword)" class="text-danger" />
+                    </div>
+                    <button type="submit" class="btn text-white py-2 px-4" style="background-color: black; width: auto;">Sign Up</button>
+                    <div class="text-center mt-3">
+                        <a href="javascript:void(0);" @onclick="() => ChangePage()" style="color: dodgerblue;">Already have an account? Sign In</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private LoginRequestModel _requestModel = new();
+    private bool _isRegister = true;
+    private bool isPasswordVisible = false;
+    private bool isCPasswordVisible = false;
+    private string password = "password";
+    private string cPassword = "password";
+    private string passwordIcon => isPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
+    private string cPasswordIcon => isCPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_isRegister)
+        {
+            await Register();
+        }
+        else
+        {
+            await Login();
+        }
+    }
+
+    public async Task Login()
+    {
+        var model = await _loginService.Login(_requestModel);
+        if (!model.Response.IsSuccess)
+        {
+            await _injectService.ErrorMessage(model.Response.Message);
+            return;
+        }
+
+        _requestModel = new();
+        var userSessionModel = new UserSessionModel
+            {
+                UserName = model.UserName,
+                Role = model.Role,
+                UserId = model.UserId,
+            };
+
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
+        Navigation.NavigateTo("/Perfume");
+    }
+
+    public async Task Register()
+    {
+        var model = await _registerService.Register(_requestModel);
+        if (!model.Response.IsSuccess)
+        {
+            await _injectService.ErrorMessage(model.Response.Message);
+            return;
+        }
+
+        await _injectService.SuccessMessage(model.Response.Message);
+        _requestModel = new();
+        _isRegister = false;
+        StateHasChanged();
+    }
+
+    private void ChangePage()
+    {
+        _isRegister = !_isRegister;
+        _requestModel = new();
+        StateHasChanged();
+    }
+
+    private void PasswordVisibility()
+    {
+        isPasswordVisible = !isPasswordVisible;
+        password = password == "password" ? "text" : "password";
+        StateHasChanged();
+    }
+
+    private void ConfirmPasswordVisibility()
+    {
+        isCPasswordVisible = !isCPasswordVisible;
+        cPassword = cPassword == "password" ? "text" : "password";
+        StateHasChanged();
+    }
+}

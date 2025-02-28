@@ -1,10 +1,29 @@
-using UniScentPerfumeManagementSystem.App.Components;
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DbConnection");
+
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseSqlServer(connectionString),
+ServiceLifetime.Transient,
+ServiceLifetime.Transient);
+
+builder.Services.AddSingleton<DapperService>(x => new DapperService(connectionString));
+//builder.Services.AddDbContext<AppDbContext>(opt =>
+//{
+//	opt.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+//});
+
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddMudServices();
+
+builder.Services.AddScoped<IInjectService, InjectService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<LoginService>();
+builder.Services.AddScoped<RegisterService>();
+builder.Services.AddScoped<PerfumeService>();
 
 var app = builder.Build();
 
@@ -17,7 +36,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 

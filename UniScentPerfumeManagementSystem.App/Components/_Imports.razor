@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -8,3 +9,12 @@
 @using Microsoft.JSInterop
 @using UniScentPerfumeManagementSystem.App
 @using UniScentPerfumeManagementSystem.App.Components
+@using UniScentPerfumeManagementSystem.App.Services
+@using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login
+@using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register
+@using UniScentPerfumeManagementSystem.Shared.Enums;
+@using UniScentPerfumeManagementSystem.Domain.Features;
+
+@inject IInjectService _injectService
+@inject NavigationManager _nav
+@inject AuthenticationStateProvider authStateProvider

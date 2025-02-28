@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Include="wwwroot\bootstrap\bootstrap.min.css.map" />
 		<None Include="wwwroot\js\bootstrap.bundle.min.js" />
 		<None Include="wwwroot\js\jquery.min.js" />
 		<None Include="wwwroot\js\notiflix-aio-3.2.7.min.js" />
