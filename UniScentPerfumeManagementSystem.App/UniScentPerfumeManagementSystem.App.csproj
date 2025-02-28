@@ -22,4 +22,10 @@
 		<Folder Include="wwwroot\images\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\UniScentPerfumeManagementSystem.Database\UniScentPerfumeManagementSystem.Database.csproj" />
+	  <ProjectReference Include="..\UniScentPerfumeManagementSystem.Domain\UniScentPerfumeManagementSystem.Domain.csproj" />
+	  <ProjectReference Include="..\UniScentPerfumeManagementSystem.Shared\UniScentPerfumeManagementSystem.Shared.csproj" />
+	</ItemGroup>
+
 </Project>
