@@ -7,8 +7,6 @@
   </PropertyGroup>
 	
   <ItemGroup>
-    <ProjectReference Include="..\PerfumeShopManagementSystem.Database\PerfumeShopManagementSystem.Database.csproj" />
-    <ProjectReference Include="..\PerfumeShopManagementSystem.Shared\PerfumeShopManagementSystem.Shared.csproj" />
     <ProjectReference Include="..\UniScentPerfumeManagementSystem.Database\UniScentPerfumeManagementSystem.Database.csproj" />
     <ProjectReference Include="..\UniScentPerfumeManagementSystem.Shared\UniScentPerfumeManagementSystem.Shared.csproj" />
   </ItemGroup>
