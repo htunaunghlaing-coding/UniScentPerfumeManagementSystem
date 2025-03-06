@@ -12,3 +12,4 @@ global using UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
 global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
 global using UniScentPerfumeManagementSystem.Shared.DapperServices;
 global using UniScentPerfumeManagementSystem.Domain.Models;
+global using MudBlazor;

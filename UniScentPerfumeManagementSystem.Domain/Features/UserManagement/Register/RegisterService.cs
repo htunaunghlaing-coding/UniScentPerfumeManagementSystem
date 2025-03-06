@@ -1,4 +1,6 @@
-﻿namespace UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
+﻿using UniScentPerfumeManagementSystem.Shared.Enums;
+
+namespace UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
 
 public class RegisterService
 {

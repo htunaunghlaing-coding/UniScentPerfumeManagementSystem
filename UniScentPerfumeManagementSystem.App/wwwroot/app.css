@@ -49,3 +49,18 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.nav-link {
+    display: flex;
+    align-items: center;  Aligns the icon and text vertically 
+    gap: 0.5rem;  Adds spacing between the icon and text 
+    text-decoration: none;  Removes underline from links 
+    color: inherit;  Inherits the text color from the parent 
+}
+
+    .nav-link .bi {
+        font-size: 1.25rem;  Adjusts the size of the icons 
+        vertical-align: middle;  Ensures proper vertical alignment 
+    }
+
+

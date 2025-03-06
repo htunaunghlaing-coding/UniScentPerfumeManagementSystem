@@ -3,22 +3,20 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DbConnection");
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlServer(connectionString),
+opt.UseSqlServer(connectionString),
 ServiceLifetime.Transient,
 ServiceLifetime.Transient);
 
 builder.Services.AddSingleton<DapperService>(x => new DapperService(connectionString));
 //builder.Services.AddDbContext<AppDbContext>(opt =>
 //{
-//	opt.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+// opt.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
 //});
 
-
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+.AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
-
 builder.Services.AddScoped<IInjectService, InjectService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<LoginService>();
@@ -31,7 +29,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts .
     app.UseHsts();
 }
 
@@ -40,6 +38,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+.AddInteractiveServerRenderMode();
+app.MapGet("/", () => Results.Redirect("/dashboard"));
 
 app.Run();

@@ -1,7 +1,8 @@
-﻿@page "/"
+﻿@* @page "/Login"
 @using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login
 @using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register
 @using UniScentPerfumeManagementSystem.Domain.Models
+@using UniScentPerfumeManagementSystem.Domain.Features
 @inject LoginService _loginService
 @inject RegisterService _registerService
 @inject NavigationManager Navigation
@@ -32,7 +33,7 @@
                     </div>
                     <button type="submit" class="btn text-white py-2 px-4" style="background-color: black; width: auto;">Sign In</button>
                     <div class="text-center mt-3">
-                        <a href="javascript:void(0);" @onclick="() => ChangePage()" style="color: dodgerblue;">Don't have an account? Sign Up</a>
+                        <div role="button" tabindex="0" @onclick="ChangePage" style="color: dodgerblue; cursor: pointer;">Don't have an account? Sign Up</div>
                     </div>
                 }
                 else
@@ -75,7 +76,7 @@
                     </div>
                     <button type="submit" class="btn text-white py-2 px-4" style="background-color: black; width: auto;">Sign Up</button>
                     <div class="text-center mt-3">
-                        <a href="javascript:void(0);" @onclick="() => ChangePage()" style="color: dodgerblue;">Already have an account? Sign In</a>
+                        <div role="button" tabindex="0" @onclick="ChangePage" style="color: dodgerblue; cursor: pointer;">Already have an account? Sign In</div>
                     </div>
                 }
             </div>
@@ -85,14 +86,13 @@
 
 @code {
     private LoginRequestModel _requestModel = new();
-    private bool _isRegister = true;
+    private bool _isRegister = false; // Set to false to show the login form first
     private bool isPasswordVisible = false;
     private bool isCPasswordVisible = false;
     private string password = "password";
     private string cPassword = "password";
     private string passwordIcon => isPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
     private string cPasswordIcon => isCPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -133,7 +133,8 @@
 
         var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
         await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
-        Navigation.NavigateTo("/Perfume");
+
+        Navigation.NavigateTo("/dashboard");
     }
 
     public async Task Register()
@@ -146,16 +147,20 @@
         }
 
         await _injectService.SuccessMessage(model.Response.Message);
+
+        // Reset the form and switch back to the login form
         _requestModel = new();
         _isRegister = false;
-        StateHasChanged();
+
+        // Redirect to the Home page after successful registration
+        Navigation.NavigateTo("/Login");
     }
 
     private void ChangePage()
     {
-        _isRegister = !_isRegister;
-        _requestModel = new();
-        StateHasChanged();
+        _isRegister = !_isRegister; // Toggle between login and register
+        _requestModel = new(); // Reset the form
+        StateHasChanged(); // Trigger UI update
     }
 
     private void PasswordVisibility()
@@ -171,4 +176,4 @@
         cPassword = cPassword == "password" ? "text" : "password";
         StateHasChanged();
     }
-}
+}  *@

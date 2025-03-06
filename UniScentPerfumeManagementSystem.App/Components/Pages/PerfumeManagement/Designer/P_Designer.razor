@@ -1,0 +1,61 @@
+﻿@page "/designer"
+@inject PerfumeService PerfumeService
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudText Typo="Typo.h4" Class="mb-4">Designer Perfumes</MudText>
+
+    <MudGrid>
+        @foreach (var perfume in perfumes)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <!-- Updated to md="3" for 4 items per row -->
+                <MudCard Elevation="25" Class="mb-4">
+                    <!-- Perfume Image with Badge -->
+                    <div style="position: relative;">
+                        <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
+                        <!-- Stock Status Badge -->
+                        <MudBadge 
+                            Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)" 
+                            Variant="Variant.Filled"
+                            Style="position: absolute; bottom: 8px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
+                            Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
+                    </div>
+
+                    <!-- Perfume Details -->
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle1">@perfume.Name</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
+
+                        <!-- Size and Price -->
+                        <MudText Typo="Typo.body2">@perfume.SizeML ml</MudText>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">$@perfume.Price</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <!-- Pagination -->
+    <MudPagination PageSize="12" TotalItems="@totalRowCount" @bind-CurrentPage="currentPage" /> <!-- Updated PageSize to 12 -->
+</MudContainer>
+
+@code {
+    private List<PerfumeDataModel> perfumes = new();
+    private int currentPage = 1;
+    private int totalRowCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await PerfumeService.GetPerfumesByCategory("Designer", new PageSettingModel { PageNo = currentPage, PageSize = 12 }); // Updated PageSize to 12
+        if (response.Response.IsSuccess)
+        {
+            perfumes = response.PerfumeList;
+            totalRowCount = response.PageSetting.TotalRowCount;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        await OnInitializedAsync(); // Re-fetch data for the new page
+    }
+}
