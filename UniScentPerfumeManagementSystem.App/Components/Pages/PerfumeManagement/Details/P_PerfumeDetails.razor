@@ -1,0 +1,107 @@
+﻿@page "/perfume-detail/{Id:int}"
+@inject NavigationManager NavigationManager
+@inject PerfumeService PerfumeService
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudGrid>
+        @if (perfume != null)
+        {
+            <MudItem xs="12" sm="6" md="6">
+                <!-- Perfume Image -->
+                <div style="border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(150, 150, 200, 0.3); padding: 8px; background-color: #fff;">
+                    <MudCardMedia Image="@perfume.PictureUrl" Height="400" Style="object-fit: contain; width: 100%;" />
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="6">
+                <!-- Perfume Title -->
+                <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center;">@perfume.Name</MudText>
+
+                <!-- Perfume Details -->
+                <div style="padding: 16px; background-color: #fff;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Name</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.Name</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Company</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.CompanyName</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Price</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">$@perfume.Price</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Category</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.Category</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Size</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.SizeML ml</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Longevity</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.Longevity</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Ingredients</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.KeyIngredients</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Notes</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.Notes</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; font-weight: bold;">Description</td>
+                            <td style="width: 5%;">-</td>
+                            <td style="width: 65%;">@perfume.Description</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <div style="padding: 16px; background-color: #fff;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Dark" Style="width: 100%; margin-top: 16px;">
+                        <MudIcon Icon="@Icons.Material.TwoTone.AddShoppingCart" Size="Size.Medium" Style="margin-right: 0.8cm;" /> Add to Cart
+                    </MudButton>
+                </div>
+            </MudItem>
+        }
+        else
+        {
+            <MudText Typo="Typo.h5">Loading...</MudText>
+        }
+    </MudGrid>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private PerfumeDataModel perfume;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var response = await PerfumeService.GetPerfumeById(Id);
+        if (response.Response.IsSuccess)
+        {
+            perfume = response.Perfume;
+        }
+    }
+
+    // Method to handle "Add to Cart"
+    private void AddToCart()
+    {
+        Console.WriteLine($"Adding perfume with ID {Id} to cart...");
+        // Implement your cart logic here
+    }
+}

@@ -1,41 +1,44 @@
 ﻿@page "/niche"
+@inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudText Typo="Typo.h4" Class="mb-4">Niche Perfumes</MudText>
 
     <MudGrid>
-        @foreach (var perfume in perfumes)
+        @if (perfumes != null && perfumes.Any())
         {
-            <MudItem xs="12" sm="6" md="3">
-                <!-- Updated to md="3" for 4 items per row -->
-                <MudCard Elevation="25" Class="mb-4">
-                    <!-- Perfume Image with Badge -->
-                    <div style="position: relative;">
-                        <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
-                        <!-- Stock Status Badge -->
-                        <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
-                                  Variant="Variant.Filled"
-                                  Style="position: absolute; bottom: 8px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
-                                  Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
-                    </div>
+            @foreach (var perfume in perfumes)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="25" Class="mb-4">
+                        <!-- Perfume Image with Click Event -->
+                        <div style="position: relative; cursor: pointer;" @onclick="@(() => NavigateToDetail(perfume.Id))">
+                            <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
+                            <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
+                                      Variant="Variant.Filled"
+                                      Style="position: absolute; bottom: 8px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
+                                      Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
+                        </div>
 
-                    <!-- Perfume Details -->
-                    <MudCardContent>
-                        <MudText Typo="Typo.subtitle1">@perfume.Name</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
-
-                        <!-- Size and Price -->
-                        <MudText Typo="Typo.body2">@perfume.SizeML ml</MudText>
-                        <MudText Typo="Typo.h6" Color="Color.Primary">$@perfume.Price</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                        <!-- Perfume Details with Click Event -->
+                        <MudCardContent @onclick="@(() => NavigateToDetail(perfume.Id))" Style="cursor: pointer;">
+                            <MudText Typo="Typo.subtitle1">@perfume.Name</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
+                            <MudText Typo="Typo.body2">@perfume.SizeML ml</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">$@perfume.Price</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.h5">No perfumes found.</MudText>
         }
     </MudGrid>
 
-    <!-- Pagination -->
-    <MudPagination PageSize="12" TotalItems="@totalRowCount" @bind-CurrentPage="currentPage" /> <!-- Updated PageSize to 12 -->
+    <MudPagination PageSize="12" TotalItems="@totalRowCount" @bind-CurrentPage="currentPage" />
 </MudContainer>
 
 @code {
@@ -45,16 +48,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = currentPage, PageSize = 12 }); // Fetch Niche perfumes
+        var response = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = currentPage, PageSize = 12 });
         if (response.Response.IsSuccess)
         {
             perfumes = response.PerfumeList;
             totalRowCount = response.PageSetting.TotalRowCount;
         }
+        else
+        {
+            Console.WriteLine("Failed to load perfumes.");
+        }
     }
 
-    private async Task LoadData()
+    private void NavigateToDetail(int id)
     {
-        await OnInitializedAsync(); // Re-fetch data for the new page
+        Console.WriteLine($"Navigating to /perfume-detail/{id}");
+        NavigationManager.NavigateTo($"/perfume-detail/{id}");
     }
 }
