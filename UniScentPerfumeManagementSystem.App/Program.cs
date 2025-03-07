@@ -1,20 +1,18 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// Load configuration (e.g., connection strings)
 var connectionString = builder.Configuration.GetConnectionString("DbConnection");
 
+// Add services to the container
 builder.Services.AddDbContext<AppDbContext>(opt =>
-opt.UseSqlServer(connectionString),
-ServiceLifetime.Transient,
-ServiceLifetime.Transient);
+    opt.UseSqlServer(connectionString),
+    ServiceLifetime.Transient,
+    ServiceLifetime.Transient);
 
 builder.Services.AddSingleton<DapperService>(x => new DapperService(connectionString));
-//builder.Services.AddDbContext<AppDbContext>(opt =>
-//{
-// opt.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
-//});
 
 builder.Services.AddRazorComponents()
-.AddInteractiveServerComponents();
+    .AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IInjectService, InjectService>();
@@ -25,7 +23,7 @@ builder.Services.AddScoped<PerfumeService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -38,7 +36,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-.AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode();
 app.MapGet("/", () => Results.Redirect("/dashboard"));
 
 app.Run();

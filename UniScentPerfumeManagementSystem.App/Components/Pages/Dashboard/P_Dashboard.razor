@@ -4,23 +4,40 @@
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <!-- Designer vs. Niche Perfumes Explanation -->
-    <MudText Typo="Typo.h5" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Discover the Difference Between Designer and Niche Perfumes
     </MudText>
     <MudText Typo="Typo.body1" Style="text-align: justify; margin-bottom: 24px;">
-        Designer perfumes are crafted by well-known fashion brands such as Chanel, Dior, or Gucci, focusing on mass appeal and accessibility. These fragrances are widely available in retail stores and are often more affordable due to their large-scale production. While they use quality ingredients, their primary focus is on brand recognition and marketing rather than exclusivity. On the other hand, niche perfumes are created by independent fragrance houses that prioritize creativity, uniqueness, and high-quality ingredients. These perfumes are typically produced in limited quantities, making them more exclusive and luxurious. Niche fragrances often feature rare or exotic components, offering a personalized and artistic olfactory experience that appeals to fragrance enthusiasts seeking something distinctive.
+        Designer perfumes are crafted by well-known fashion brands such as Chanel, Dior, or Gucci, 
+        focusing on mass appeal and accessibility. These fragrances are widely available in retail 
+        stores and are often more affordable due to their large-scale production. While they use 
+        quality ingredients, their primary focus is on brand recognition and marketing rather than 
+        exclusivity. On the other hand, niche perfumes are created by independent fragrance houses 
+        that prioritize creativity, uniqueness, and high-quality ingredients. These perfumes are typically 
+        produced in limited quantities, making them more exclusive and luxurious. Niche fragrances often 
+        feature rare or exotic components, offering a personalized and artistic olfactory experience that 
+        appeals to fragrance enthusiasts seeking something distinctive.
     </MudText>
 
     <!-- Top, Middle, Base Notes Explanation -->
-    <MudText Typo="Typo.h5" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Understanding Fragrance Notes
     </MudText>
     <MudText Typo="Typo.body1" Style="text-align: justify; margin-bottom: 24px;">
-        Perfumes are composed of three layers of scent notes, each contributing to the overall fragrance experience. The <strong>top notes</strong> are the first scents you smell when applying a perfume. They are light, fresh, and evaporate quickly, often featuring citrus, mint, or herbal elements. These notes serve as the "first impression" of the fragrance. As the top notes fade, the <strong>middle notes</strong> (also known as the "heart notes") emerge. These form the core of the fragrance and are often floral or spicy, such as rose, lavender, or cinnamon. Finally, the <strong>base notes</strong> are the longest-lasting scents that linger on your skin for hours. They provide depth and stability to the fragrance, often featuring rich and warm ingredients like vanilla, sandalwood, or musk. Understanding these layers helps you appreciate the complexity and evolution of a perfume over time.
+        Perfumes are composed of three layers of scent notes, each contributing to the overall fragrance
+        experience. The <strong>top notes</strong> are the first scents you smell when applying a perfume. 
+        They are light, fresh, and evaporate quickly, often featuring citrus, mint, or herbal elements. 
+        These notes serve as the "first impression" of the fragrance. As the top notes fade, 
+        the <strong>middle notes</strong> (also known as the "heart notes") emerge. These form the core of 
+        the fragrance and are often floral or spicy, such as rose, lavender, or cinnamon. Finally, 
+        the <strong>base notes</strong> are the longest-lasting scents that linger on your skin for hours. 
+        They provide depth and stability to the fragrance, often featuring rich and warm ingredients like 
+        vanilla, sandalwood, or musk. Understanding these layers helps you appreciate the complexity and 
+        evolution of a perfume over time.
     </MudText>
 
     <!-- Featured Designer Perfumes -->
-    <MudText Typo="Typo.subtitle1" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Featured Designer Perfumes
     </MudText>
     <MudGrid>
@@ -35,7 +52,7 @@
                             <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
                             <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
                                       Variant="Variant.Filled"
-                                      Style="position: absolute; bottom: 8px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
+                                      Style="position: absolute; bottom: -3px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
                                       Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
                         </div>
 
@@ -51,20 +68,20 @@
         }
         else
         {
-            <MudText Typo="Typo.h5">Loading...</MudText>
+            <MudText Typo="Typo.h4">Loading...</MudText>
         }
     </MudGrid>
 
     <!-- See More Button for Designer Perfumes -->
     <div style="text-align: center; margin-top: 16px;">
-        <button class="rounded-button" @onclick="CycleDesignerOptions">
-            <span class="button-text">@currentDesignerOption</span>
+        <MudButton Class="rounded-pill-button" Variant="Variant.Filled" Color="Color.Dark" OnClick="NavigateToDesignerPage">
+            <MudText Typo="Typo.body1">See More</MudText>
             <MudIcon Icon="@Icons.Material.TwoTone.MoreHoriz" Size="Size.Medium" Style="margin-left: 1cm;" />
-        </button>
+        </MudButton>
     </div>
 
     <!-- Featured Niche Perfumes -->
-    <MudText Typo="Typo.subtitle1" Style="font-weight: bold; text-align: center; margin-top: 32px; margin-bottom: 16px;">
+    <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-top: 32px; margin-bottom: 16px;">
         Featured Niche Perfumes
     </MudText>
     <MudGrid>
@@ -79,7 +96,7 @@
                             <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
                             <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
                                       Variant="Variant.Filled"
-                                      Style="position: absolute; bottom: 8px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
+                                      Style="position: absolute; bottom: -3px; left: 4px; padding: 4px 8px; font-size: 0.8rem;"
                                       Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
                         </div>
 
@@ -95,13 +112,13 @@
         }
         else
         {
-            <MudText Typo="Typo.h5">Loading...</MudText>
+            <MudText Typo="Typo.h4">Loading...</MudText>
         }
     </MudGrid>
 
     <!-- See More Button for Niche Perfumes -->
     <div style="text-align: center; margin-top: 16px;">
-        <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="NavigateToNichePage">
+        <MudButton Class="rounded-pill-button" Variant="Variant.Filled" Color="Color.Dark" OnClick="NavigateToNichePage">
             <MudText Typo="Typo.body1">See More</MudText>
             <MudIcon Icon="@Icons.Material.TwoTone.MoreHoriz" Size="Size.Medium" Style="margin-left: 1cm;" />
         </MudButton>
