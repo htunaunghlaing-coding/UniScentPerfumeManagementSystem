@@ -15,5 +15,7 @@ public class PerfumeRequestModel : BaseRequestModel
     public string Notes { get; set; }
     public string Description { get; set; }
     public bool Status { get; set; }
+    public string? Gender { get; set; }
+
     public PageSettingModel PageSetting { get; set; }
 }

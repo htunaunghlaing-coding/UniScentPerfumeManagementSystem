@@ -17,6 +17,7 @@ public class PerfumeResponseModel
     public bool? Status { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public string? Gender { get; set; }
     // For single perfume details
     public PerfumeDataModel Perfume { get; set; }
     // For a list of perfumes

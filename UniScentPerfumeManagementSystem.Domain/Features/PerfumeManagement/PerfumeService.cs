@@ -32,7 +32,8 @@ public class PerfumeService
                     Description = p.Description,
                     Status = p.Status,
                     CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
+                    UpdatedAt = p.UpdatedAt,
+                    Gender = p.Gender
                 })
                 .FirstOrDefaultAsync();
 
@@ -75,7 +76,8 @@ public class PerfumeService
                     Description = p.Description,
                     Status = p.Status,
                     CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
+                    UpdatedAt = p.UpdatedAt,
+                    Gender = p.Gender
                 });
 
             var totalRowCount = await query.CountAsync();
@@ -101,6 +103,48 @@ public class PerfumeService
         return model;
     }
 
+    public async Task<PerfumeResponseModel> GetPerfumesByCategory(string category)
+    {
+        var model = new PerfumeResponseModel();
+        try
+        {
+            // Query all perfumes matching the specified category
+            var perfumes = await _db.TblPerfumes
+                .Where(p => p.Category == category)
+                .Select(p => new PerfumeDataModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CompanyName = p.CompanyName,
+                    Price = p.Price,
+                    Category = p.Category,
+                    StockQuantity = p.StockQuantity,
+                    SizeML = p.SizeMl,
+                    PictureUrl = p.PictureUrl,
+                    Longevity = p.Longevity,
+                    KeyIngredients = p.KeyIngredients,
+                    Notes = p.Notes,
+                    Description = p.Description,
+                    Status = p.Status,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    Gender = p.Gender,
+                })
+                .ToListAsync();
+
+            // Populate the response model
+            model.PerfumeList = perfumes;
+            model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions and return an error response
+            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+        }
+
+        return model;
+    }
+
     public async Task<PerfumeResponseModel> Create(PerfumeRequestModel requestModel)
     {
         var model = new PerfumeResponseModel();
@@ -120,7 +164,8 @@ public class PerfumeService
                 Notes = requestModel.Notes,
                 Description = requestModel.Description,
                 Status = requestModel.Status,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                Gender = requestModel.Gender,
             };
 
             await _db.AddAsync(perfume);
@@ -161,6 +206,7 @@ public class PerfumeService
             perfume.Notes = requestModel.Notes;
             perfume.Description = requestModel.Description;
             perfume.Status = requestModel.Status;
+            perfume.Gender = requestModel.Gender;
             perfume.UpdatedAt = DateTime.Now;
 
             _db.Entry(perfume).State = EntityState.Modified;
@@ -201,6 +247,48 @@ public class PerfumeService
         return model;
     }
 
+    public async Task<PerfumeResponseModel> GetPerfumesByGender(string gender)
+    {
+        var model = new PerfumeResponseModel();
+        try
+        {
+            // Query all perfumes matching the specified gender
+            var perfumes = await _db.TblPerfumes
+                .Where(p => p.Gender == gender)
+                .Select(p => new PerfumeDataModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CompanyName = p.CompanyName,
+                    Price = p.Price,
+                    Category = p.Category,
+                    StockQuantity = p.StockQuantity,
+                    SizeML = p.SizeMl,
+                    PictureUrl = p.PictureUrl,
+                    Longevity = p.Longevity,
+                    KeyIngredients = p.KeyIngredients,
+                    Notes = p.Notes,
+                    Description = p.Description,
+                    Status = p.Status,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    Gender = p.Gender,
+                })
+                .ToListAsync();
+
+            // Populate the response model
+            model.PerfumeList = perfumes;
+            model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions and return an error response
+            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+        }
+
+        return model;
+    }
+
     private PerfumeResponseModel MapToResponse(PerfumeDataModel data)
     {
         return new PerfumeResponseModel
@@ -220,6 +308,7 @@ public class PerfumeService
             Status = data.Status,
             CreatedAt = data.CreatedAt,
             UpdatedAt = data.UpdatedAt,
+            Gender = data.Gender,
             Perfume = data
         };
     }

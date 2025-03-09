@@ -58,15 +58,11 @@
             <MudText Typo="Typo.h5">No perfumes found.</MudText>
         }
     </MudGrid>
-
-    <MudPagination PageSize="12" TotalItems="@totalRowCount" @bind-CurrentPage="currentPage" />
 </MudContainer>
 
 @code {
     private List<PerfumeDataModel> perfumes = new();
     private List<PerfumeDataModel> filteredPerfumes = new();
-    private int currentPage = 1;
-    private int totalRowCount;
     private string searchQuery = string.Empty;
     private bool isAuthenticated = false;
 
@@ -95,11 +91,10 @@
 
     private async Task LoadPerfumes()
     {
-        var response = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = currentPage, PageSize = 12 });
+        var response = await PerfumeService.GetPerfumesByCategory("Niche");
         if (response.Response.IsSuccess)
         {
             perfumes = response.PerfumeList;
-            totalRowCount = response.PageSetting.TotalRowCount;
             filteredPerfumes = perfumes; // Initialize filtered list with all perfumes
         }
         else

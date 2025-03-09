@@ -35,5 +35,7 @@ public partial class TblPerfume
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Gender { get; set; }
+
     public virtual ICollection<TblOrderItem> TblOrderItems { get; set; } = new List<TblOrderItem>();
 }
