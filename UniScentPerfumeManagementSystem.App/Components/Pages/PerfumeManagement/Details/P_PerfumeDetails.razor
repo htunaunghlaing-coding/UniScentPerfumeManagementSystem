@@ -6,7 +6,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid>
-        @if (perfume != null)
+        @if (isAuthenticated && perfume != null)
         {
             <MudItem xs="12" sm="6" md="6">
                 <!-- Perfume Image -->
@@ -78,6 +78,10 @@
                 </div>
             </MudItem>
         }
+        else if (!isAuthenticated)
+        {
+            <MudText Typo="Typo.h5">Redirecting to login...</MudText>
+        }
         else
         {
             <MudText Typo="Typo.h5">Loading...</MudText>
@@ -90,19 +94,39 @@
     public int Id { get; set; }
 
     private PerfumeDataModel perfume;
+    private bool isAuthenticated = false;
 
-    protected override async Task OnParametersSetAsync()
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var response = await PerfumeService.GetPerfumeById(Id);
-        if (response.Response.IsSuccess)
+        if (firstRender)
         {
-            perfume = response.Perfume;
+            // Check authentication state
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+            if (!isAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            // Load perfume details if authenticated
+            var response = await PerfumeService.GetPerfumeById(Id);
+            if (response.Response.IsSuccess)
+            {
+                perfume = response.Perfume;
+            }
+
+            StateHasChanged();
         }
     }
 
     private void AddToCart(PerfumeDataModel perfume)
     {
         CartService.AddToCart(perfume);
-        NavigationManager.NavigateTo("/addToCart"); // Redirect to the Add to Cart page <button class="citation-flag" data-index="2">
+        NavigationManager.NavigateTo("/addToCart"); // Redirect to the Add to Cart page
     }
 }

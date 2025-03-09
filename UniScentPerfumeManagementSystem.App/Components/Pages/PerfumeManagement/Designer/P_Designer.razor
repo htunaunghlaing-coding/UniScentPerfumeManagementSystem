@@ -15,7 +15,7 @@
             <MudStack Row="true" Spacing="2" Style="width: 300px;">
                 <MudTextField @bind-Value="searchQuery" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="flex-grow-1" />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="FilterPerfumes">
-                    <MudIcon Icon="@Icons.Material.Filled.Search"/>
+                    <MudIcon Icon="@Icons.Material.Filled.Search" />
                 </MudButton>
             </MudStack>
         </MudItem>
@@ -65,9 +65,23 @@
     private int totalRowCount;
     private string searchQuery = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadPerfumes();
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            await LoadPerfumes();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadPerfumes()

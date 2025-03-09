@@ -8,14 +8,14 @@
         Discover the Difference Between Designer and Niche Perfumes
     </MudText>
     <MudText Typo="Typo.body1" Style="text-align: justify; margin-bottom: 24px;">
-        Designer perfumes are crafted by well-known fashion brands such as Chanel, Dior, or Gucci, 
-        focusing on mass appeal and accessibility. These fragrances are widely available in retail 
-        stores and are often more affordable due to their large-scale production. While they use 
-        quality ingredients, their primary focus is on brand recognition and marketing rather than 
-        exclusivity. On the other hand, niche perfumes are created by independent fragrance houses 
-        that prioritize creativity, uniqueness, and high-quality ingredients. These perfumes are typically 
-        produced in limited quantities, making them more exclusive and luxurious. Niche fragrances often 
-        feature rare or exotic components, offering a personalized and artistic olfactory experience that 
+        Designer perfumes are crafted by well-known fashion brands such as Chanel, Dior, or Gucci,
+        focusing on mass appeal and accessibility. These fragrances are widely available in retail
+        stores and are often more affordable due to their large-scale production. While they use
+        quality ingredients, their primary focus is on brand recognition and marketing rather than
+        exclusivity. On the other hand, niche perfumes are created by independent fragrance houses
+        that prioritize creativity, uniqueness, and high-quality ingredients. These perfumes are typically
+        produced in limited quantities, making them more exclusive and luxurious. Niche fragrances often
+        feature rare or exotic components, offering a personalized and artistic olfactory experience that
         appeals to fragrance enthusiasts seeking something distinctive.
     </MudText>
 
@@ -25,14 +25,14 @@
     </MudText>
     <MudText Typo="Typo.body1" Style="text-align: justify; margin-bottom: 24px;">
         Perfumes are composed of three layers of scent notes, each contributing to the overall fragrance
-        experience. The <strong>top notes</strong> are the first scents you smell when applying a perfume. 
-        They are light, fresh, and evaporate quickly, often featuring citrus, mint, or herbal elements. 
-        These notes serve as the "first impression" of the fragrance. As the top notes fade, 
-        the <strong>middle notes</strong> (also known as the "heart notes") emerge. These form the core of 
-        the fragrance and are often floral or spicy, such as rose, lavender, or cinnamon. Finally, 
-        the <strong>base notes</strong> are the longest-lasting scents that linger on your skin for hours. 
-        They provide depth and stability to the fragrance, often featuring rich and warm ingredients like 
-        vanilla, sandalwood, or musk. Understanding these layers helps you appreciate the complexity and 
+        experience. The <strong>top notes</strong> are the first scents you smell when applying a perfume.
+        They are light, fresh, and evaporate quickly, often featuring citrus, mint, or herbal elements.
+        These notes serve as the "first impression" of the fragrance. As the top notes fade,
+        the <strong>middle notes</strong> (also known as the "heart notes") emerge. These form the core of
+        the fragrance and are often floral or spicy, such as rose, lavender, or cinnamon. Finally,
+        the <strong>base notes</strong> are the longest-lasting scents that linger on your skin for hours.
+        They provide depth and stability to the fragrance, often featuring rich and warm ingredients like
+        vanilla, sandalwood, or musk. Understanding these layers helps you appreciate the complexity and
         evolution of a perfume over time.
     </MudText>
 
@@ -129,7 +129,27 @@
     private List<PerfumeDataModel> featuredDesignerPerfumes = new();
     private List<PerfumeDataModel> featuredNichePerfumes = new();
 
-    protected override async Task OnInitializedAsync()
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            // Fetch featured designer and niche perfumes
+            await LoadPerfumes();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadPerfumes()
     {
         // Fetch featured designer perfumes
         var designerResponse = await PerfumeService.GetPerfumesByCategory("Designer", new PageSettingModel { PageNo = 1, PageSize = 4 });

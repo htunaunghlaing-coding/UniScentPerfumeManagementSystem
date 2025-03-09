@@ -6,53 +6,60 @@
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
         <!-- Cart Header -->
-        <MudText Typo="Typo.h4" Class="mb-4">Your Cart (@CartService.GetCartItems().Count items)</MudText>
-
-        <!-- Cart Items -->
-        @foreach (var item in CartService.GetCartItems())
+        @if (isAuthenticated)
         {
-            <div class="cart-item mb-6">
-                <!-- Top Row: Image, Name, Remove Button -->
-                <div class="d-flex align-center justify-space-between">
-                    <!-- Perfume Image -->
-                    <MudImage Src="@item.Perfume.PictureUrl" Class="perfume-image mr-4" />
+            <MudText Typo="Typo.h4" Class="mb-4">Your Cart (@CartService.GetCartItems().Count items)</MudText>
 
-                    <!-- Perfume Data (Middle Section) -->
-                    <div style="flex-grow: 1;">
-                        <!-- Bold Perfume Name -->
-                        <MudText Typo="Typo.h5" Class="bold-perfume-name">@item.Perfume.Name</MudText>
-                        <MudText Typo="Typo.body2">@item.Perfume.SizeML ml</MudText>
-                        <div class="d-flex align-center mt-8">
-                            <!-- Quantity Selector -->
-                            <div class="quantity-container">
-                                <button class="quantity-button decrease" @onclick="() => DecreaseQuantity(item.Perfume.Id)" disabled="@(item.Quantity <= 1)">
-                                    -
-                                </button>
-                                <span class="quantity-value">@item.Quantity</span>
-                                <button class="quantity-button increase" @onclick="() => IncreaseQuantity(item.Perfume.Id)">
-                                    +
-                                </button>
+            <!-- Cart Items -->
+            @foreach (var item in CartService.GetCartItems())
+            {
+                <div class="cart-item mb-6">
+                    <!-- Top Row: Image, Name, Remove Button -->
+                    <div class="d-flex align-center justify-space-between">
+                        <!-- Perfume Image -->
+                        <MudImage Src="@item.Perfume.PictureUrl" Class="perfume-image mr-4" />
+
+                        <!-- Perfume Data (Middle Section) -->
+                        <div style="flex-grow: 1;">
+                            <!-- Bold Perfume Name -->
+                            <MudText Typo="Typo.h5" Class="bold-perfume-name">@item.Perfume.Name</MudText>
+                            <MudText Typo="Typo.body2">@item.Perfume.SizeML ml</MudText>
+                            <div class="d-flex align-center mt-8">
+                                <!-- Quantity Selector -->
+                                <div class="quantity-container">
+                                    <button class="quantity-button decrease" @onclick="() => DecreaseQuantity(item.Perfume.Id)" disabled="@(item.Quantity <= 1)">
+                                        -
+                                    </button>
+                                    <span class="quantity-value">@item.Quantity</span>
+                                    <button class="quantity-button increase" @onclick="() => IncreaseQuantity(item.Perfume.Id)">
+                                        +
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Price and Remove Button -->
-                    <div class="d-flex flex-column align-end">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFromCart(item.Perfume.Id)" Class="mb-9" />
-                        <MudText Typo="Typo.subtitle2">$@(item.Perfume.Price * item.Quantity)</MudText>
+                        <!-- Price and Remove Button -->
+                        <div class="d-flex flex-column align-end">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFromCart(item.Perfume.Id)" Class="mb-9" />
+                            <MudText Typo="Typo.subtitle2">$@(item.Perfume.Price * item.Quantity)</MudText>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
+
+            <!-- Total Price -->
+            <MudText Typo="Typo.h5" Class="mt-4">Total: $@CartService.GetTotalPrice()</MudText>
+
+            <!-- Checkout Button -->
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="NavigateToCheckout">
+                <MudIcon Icon="@Icons.Material.TwoTone.ShoppingCartCheckout" Size="Size.Medium" Class="mr-3" />
+                Checkout
+            </MudButton>
         }
-
-        <!-- Total Price -->
-        <MudText Typo="Typo.h5" Class="mt-4">Total: $@CartService.GetTotalPrice()</MudText>
-
-        <!-- Checkout Button -->
-        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="NavigateToCheckout">
-            <MudIcon Icon="@Icons.Material.TwoTone.ShoppingCartCheckout" Size="Size.Medium" Class="mr-3" />
-            Checkout
-        </MudButton>
+        else
+        {
+            <MudText Typo="Typo.h5">Redirecting to login...</MudText>
+        }
     </MudPaper>
 </MudContainer>
 
@@ -124,6 +131,29 @@
 </style>
 
 @code {
+    private bool isAuthenticated = false;
+
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Check authentication state
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+            if (!isAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            StateHasChanged();
+        }
+    }
+
     private void IncreaseQuantity(int perfumeId)
     {
         CartService.UpdateQuantity(perfumeId, 1); // Increment by 1
@@ -141,6 +171,6 @@
 
     private void NavigateToCheckout()
     {
-        NavigationManager.NavigateTo("/checkout"); // Redirect to the checkout page <button class="citation-flag" data-index="2">
+        NavigationManager.NavigateTo("/checkout"); // Redirect to the checkout page
     }
 }

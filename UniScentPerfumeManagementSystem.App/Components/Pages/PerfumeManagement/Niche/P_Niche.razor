@@ -19,11 +19,11 @@
                 </MudButton>
             </MudStack>
         </MudItem>
-    </MudGrid>  
+    </MudGrid>
 
     <!-- Perfume Grid -->
     <MudGrid>
-        @if (filteredPerfumes != null && filteredPerfumes.Any())
+        @if (isAuthenticated && filteredPerfumes != null && filteredPerfumes.Any())
         {
             @foreach (var perfume in filteredPerfumes)
             {
@@ -49,6 +49,10 @@
                 </MudItem>
             }
         }
+        else if (!isAuthenticated)
+        {
+            <MudText Typo="Typo.h5">Redirecting to login...</MudText>
+        }
         else
         {
             <MudText Typo="Typo.h5">No perfumes found.</MudText>
@@ -64,10 +68,29 @@
     private int currentPage = 1;
     private int totalRowCount;
     private string searchQuery = string.Empty;
+    private bool isAuthenticated = false;
 
-    protected override async Task OnInitializedAsync()
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadPerfumes();
+        if (firstRender)
+        {
+            // Check authentication state
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+            if (!isAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            // Load niche perfumes if authenticated
+            await LoadPerfumes();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadPerfumes()
