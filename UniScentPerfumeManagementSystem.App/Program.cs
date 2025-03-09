@@ -1,3 +1,6 @@
+using UniScentPerfumeManagementSystem.Domain.Features.CartManagement;
+using UniScentPerfumeManagementSystem.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Load configuration (e.g., connection strings)
@@ -20,6 +23,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<RegisterService>();
 builder.Services.AddScoped<PerfumeService>();
+builder.Services.AddScoped<CartService>();
 
 var app = builder.Build();
 

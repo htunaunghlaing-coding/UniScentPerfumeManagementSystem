@@ -1,6 +1,8 @@
 ﻿@page "/perfume-detail/{Id:int}"
+@using UniScentPerfumeManagementSystem.Services
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
+@inject CartService CartService
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid>
@@ -70,7 +72,7 @@
 
                 <!-- Add to Cart Button -->
                 <div style="padding: 16px; background-color: #fff;">
-                    <MudButton Variant="Variant.Filled" Color="Color.Dark" Style="width: 100%; margin-top: 16px;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Dark" Style="width: 100%; margin-top: 16px;" OnClick="() => AddToCart(perfume)">
                         <MudIcon Icon="@Icons.Material.TwoTone.AddShoppingCart" Size="Size.Medium" Style="margin-right: 0.8cm;" /> Add to Cart
                     </MudButton>
                 </div>
@@ -98,10 +100,9 @@
         }
     }
 
-    // Method to handle "Add to Cart"
-    private void AddToCart()
+    private void AddToCart(PerfumeDataModel perfume)
     {
-        Console.WriteLine($"Adding perfume with ID {Id} to cart...");
-        // Implement your cart logic here
+        CartService.AddToCart(perfume);
+        NavigationManager.NavigateTo("/addToCart"); // Redirect to the Add to Cart page <button class="citation-flag" data-index="2">
     }
 }

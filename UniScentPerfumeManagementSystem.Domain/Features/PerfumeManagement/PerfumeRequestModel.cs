@@ -1,6 +1,6 @@
 ﻿namespace UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
 
-public class PerfumeRequestModel
+public class PerfumeRequestModel : BaseRequestModel
 {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -15,4 +15,5 @@ public class PerfumeRequestModel
     public string Notes { get; set; }
     public string Description { get; set; }
     public bool Status { get; set; }
+    public PageSettingModel PageSetting { get; set; }
 }

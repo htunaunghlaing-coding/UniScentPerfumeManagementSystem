@@ -3,7 +3,7 @@
 public class PageSettingResponseModel
 {
     public int PageNo { get; set; } = 1;
-    public int RowCount { get; set; } = 10;
+    public int RowCount { get; set; } = 12;
     public int TotalRowCount { get; set; }
     public int TotalPageNo
     {

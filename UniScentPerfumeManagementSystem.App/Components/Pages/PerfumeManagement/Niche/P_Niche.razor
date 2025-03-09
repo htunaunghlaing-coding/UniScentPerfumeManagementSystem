@@ -3,12 +3,29 @@
 @inject PerfumeService PerfumeService
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <MudText Typo="Typo.h4" Class="mb-4">Niche Perfumes</MudText>
+    <!-- Header Section -->
+    <MudGrid Class="mb-4">
+        <!-- Title on the Left -->
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h4">Niche Perfumes</MudText>
+        </MudItem>
 
+        <!-- Search Bar on the Right -->
+        <MudItem xs="12" sm="6" Class="d-flex justify-end align-center">
+            <MudStack Row="true" Spacing="2" Style="width: 300px;">
+                <MudTextField @bind-Value="searchQuery" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="flex-grow-1" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="FilterPerfumes">
+                    <MudIcon Icon="@Icons.Material.Filled.Search" />
+                </MudButton>
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Perfume Grid -->
     <MudGrid>
-        @if (perfumes != null && perfumes.Any())
+        @if (filteredPerfumes != null && filteredPerfumes.Any())
         {
-            @foreach (var perfume in perfumes)
+            @foreach (var perfume in filteredPerfumes)
             {
                 <MudItem xs="12" sm="6" md="3">
                     <MudCard Elevation="25" Class="mb-4">
@@ -43,21 +60,49 @@
 
 @code {
     private List<PerfumeDataModel> perfumes = new();
+    private List<PerfumeDataModel> filteredPerfumes = new();
     private int currentPage = 1;
     private int totalRowCount;
+    private string searchQuery = string.Empty;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadPerfumes();
+    }
+
+    private async Task LoadPerfumes()
     {
         var response = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = currentPage, PageSize = 12 });
         if (response.Response.IsSuccess)
         {
             perfumes = response.PerfumeList;
             totalRowCount = response.PageSetting.TotalRowCount;
+            filteredPerfumes = perfumes; // Initialize filtered list with all perfumes
         }
         else
         {
             Console.WriteLine("Failed to load perfumes.");
         }
+    }
+
+    private void FilterPerfumes()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredPerfumes = perfumes; // Show all perfumes if search query is empty
+        }
+        else
+        {
+            var query = searchQuery.Trim().ToLower();
+            filteredPerfumes = perfumes.Where(p =>
+                p.Name.ToLower().Contains(query) ||
+                p.CompanyName.ToLower().Contains(query) ||
+                p.Price.ToString().Contains(query) ||
+                p.SizeML.ToString().Contains(query)
+            ).ToList();
+        }
+
+        StateHasChanged(); // Trigger UI update
     }
 
     private void NavigateToDetail(int id)
