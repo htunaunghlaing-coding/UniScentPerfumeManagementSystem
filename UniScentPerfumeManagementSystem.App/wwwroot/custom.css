@@ -149,5 +149,14 @@ main {
     transition: transform 0.3s ease;
 }
 
+input.input-validation-error {
+    border-color: red;
+}
+
+/* Style validation messages */
+.text-danger {
+    color: red;
+    font-size: 0.875rem;
+}
 
 

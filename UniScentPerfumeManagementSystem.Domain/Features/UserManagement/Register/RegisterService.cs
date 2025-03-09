@@ -11,16 +11,18 @@ public class RegisterService
         _db = db;
     }
 
-    public async Task<LoginResponseModel> Register(LoginRequestModel reqModel)
+    public async Task<LoginResponseModel> Register(RegisterRequestModel reqModel)
     {
         var model = new LoginResponseModel();
         try
         {
             #region Check Duplicate UserName and PhoneNo
 
+            // Check if the username or phone number already exists
             var user = await _db.TblUsers.AsNoTracking().FirstOrDefaultAsync(x =>
                     x.UserName.ToLower().Trim() == reqModel.UserName.ToLower().Trim() ||
-                    x.PhoneNo==reqModel.PhoneNo);
+                    x.PhoneNo == reqModel.PhoneNo);
+
             if (user is not null)
             {
                 if (user.UserName.ToLower().Trim() == reqModel.UserName.ToLower().Trim())
@@ -37,19 +39,27 @@ public class RegisterService
 
             #endregion
 
-            string hashpw =
-                   reqModel.Password.ToSHA256HexHashString(reqModel.UserName);
-            var item = new TblUser();
-            item.UserId = Guid.NewGuid().ToString();
-            item.UserName = reqModel.UserName;
-            item.PhoneNo = reqModel.PhoneNo;
-            item.Email = reqModel.Email;
-            item.Password = hashpw;
-            item.CreatedDate = DateTime.Now;
-            item.RoleCode = EnumRoleType.Customer.ToEnumDescription();
+            // Hash the password using the username as salt
+            string hashpw = reqModel.Password.ToSHA256HexHashString(reqModel.UserName);
+
+            // Create a new user entity
+            var item = new TblUser
+            {
+                UserId = Guid.NewGuid().ToString(),
+                UserName = reqModel.UserName,
+                PhoneNo = reqModel.PhoneNo,
+                Email = reqModel.Email,
+                Password = hashpw,
+                CreatedDate = DateTime.Now,
+                RoleCode = EnumRoleType.Customer.ToEnumDescription()
+            };
+
+            // Add the user to the database
             await _db.AddAsync(item);
             await _db.SaveChangesAsync();
-            model.Response = SubResponseModel.GetResponseMsg("Registration Success!Thanks for registering!", true);
+
+            // Populate the response model with success message
+            model.Response = SubResponseModel.GetResponseMsg("Registration Success! Thanks for registering!", true);
         }
         catch (Exception ex)
         {

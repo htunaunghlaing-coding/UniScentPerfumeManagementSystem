@@ -12,66 +12,84 @@
             @if (!_isRegister)
             {
                 <h1 class="h3 mb-3 fw-normal text-center">Sign In</h1>
-                <form class="form-horizontal" id="signin-form" method="post" action="/SignIn/Index">
-                    <div class="form-floating mb-3">
-                        <div class="mb-3">
-                            <label class="form-label">UserName</label>
-                            <input class="form-control" type="text" placeholder="UserName" @bind-value="_reqModel.UserName" maxlength="50" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <div class="input-group">
-                                <input class="form-control" type=@password placeholder="Password" @bind-value="_reqModel.Password" maxlength="50" />
-                                <button type="button" class="btn btn-outline-secondary" @onclick="PasswordVisibility">
-                                    <i class="@passwordIcon"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-primary w-100 py-2" @onclick=SignIn>Sign In</button>
-                    <div class="text-center mt-3">
-                        <a href="javascript:void(0);" @onclick="() => ChangePage()">Don't have an account? Sign Up</a>
-                    </div>
-                </form>
-            }
-            else
-            {
-                <h1 class="h3 mb-3 fw-normal text-center">Register</h1>
-                <div class="form-floating mb-3">
+                <EditForm Model="_loginModel" OnValidSubmit="SignIn">
+                    <DataAnnotationsValidator />
+
                     <div class="mb-3">
                         <label class="form-label">UserName</label>
-                        <input class="form-control" type="text" placeholder="UserName" @bind-value="_reqModel.UserName" maxlength="50" />
+                        <InputText @bind-Value="_loginModel.UserName" class="form-control" placeholder="UserName" />
+                        <ValidationMessage For="() => _loginModel.UserName" class="text-danger" />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input class="form-control" type="email" placeholder="Email" @bind-value="_reqModel.Email" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone No</label>
-                        <input class="form-control" type="text" placeholder="Phone Number" @bind-value="_reqModel.PhoneNo" />
-                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <div class="input-group">
-                            <input class="form-control" type=@password placeholder="Password" @bind-value="_reqModel.Password" maxlength="50" />
+                            <InputText type=@password @bind-Value="_loginModel.Password" class="form-control" placeholder="Password" />
                             <button type="button" class="btn btn-outline-secondary" @onclick="PasswordVisibility">
                                 <i class="@passwordIcon"></i>
                             </button>
                         </div>
+                        <ValidationMessage For="() => _loginModel.Password" class="text-danger" />
                     </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2">Sign In</button>
+                </EditForm>
+
+                <div class="text-center mt-3">
+                    <a href="javascript:void(0);" @onclick="() => ChangePage()">Don't have an account? <strong>Sign Up</strong></a>
+                </div>
+            }
+            else
+            {
+                <h1 class="h3 mb-3 fw-normal text-center">Register</h1>
+                <EditForm Model="_registerModel" OnValidSubmit="Register">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">UserName</label>
+                        <InputText @bind-Value="_registerModel.UserName" class="form-control" placeholder="UserName" />
+                        <ValidationMessage For="() => _registerModel.UserName" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText @bind-Value="_registerModel.Email" class="form-control" placeholder="Email" />
+                        <ValidationMessage For="() => _registerModel.Email" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone No</label>
+                        <InputText @bind-Value="_registerModel.PhoneNo" class="form-control" placeholder="Phone Number" />
+                        <ValidationMessage For="() => _registerModel.PhoneNo" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <InputText type=@password @bind-Value="_registerModel.Password" class="form-control" placeholder="Password" />
+                            <button type="button" class="btn btn-outline-secondary" @onclick="PasswordVisibility">
+                                <i class="@passwordIcon"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="() => _registerModel.Password" class="text-danger" />
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Confirm Password</label>
                         <div class="input-group">
-                            <input class="form-control" type=@cPassword placeholder="Confirm Password" @bind-value="_reqModel.ConfirmPassword" maxlength="50" />
+                            <InputText type=@cPassword @bind-Value="_registerModel.ConfirmPassword" class="form-control" placeholder="Confirm Password" />
                             <button type="button" class="btn btn-outline-secondary" @onclick="ConfirmPasswordVisibility">
                                 <i class="@cPasswordIcon"></i>
                             </button>
                         </div>
+                        <ValidationMessage For="() => _registerModel.ConfirmPassword" class="text-danger" />
                     </div>
-                </div>
-                <button type="button" class="btn btn-primary w-100 py-2" @onclick=Register>Sign Up</button>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2">Sign Up</button>
+                </EditForm>
+
                 <div class="text-center mt-3">
-                    <a href="javascript:void(0);" @onclick="() => ChangePage()">Already have an account? Sign In</a>
+                    <a href="javascript:void(0);" @onclick="() => ChangePage()">Already have an account? <strong>Sign In</strong></a>
                 </div>
             }
         </div>
@@ -79,14 +97,16 @@
 </div>
 
 @code {
-    private LoginRequestModel _reqModel = new();
-    private bool _isRegister = true;
+    private LoginRequestModel _loginModel = new();
+    private RegisterRequestModel _registerModel = new();
+    private bool _isRegister = false; // Start with the login form
     private bool isPasswordVisible = false;
     private bool isCPasswordVisible = false;
     private string password = "password";
     private string cPassword = "password";
     private string passwordIcon => isPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
     private string cPasswordIcon => isCPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -97,11 +117,10 @@
 
     async Task SignIn()
     {
-        if (!await CheckRequiredFields(_reqModel)) return;
-        var model = await _loginService.Login(_reqModel);
+        var model = await _loginService.Login(_loginModel);
         if (!model.Response.IsSuccess)
         {
-            await _injectService.ErrorMessage(model.Response.Message);
+            await _injectService.ErrorMessage(model.Response.Message); // Keep this for server-side errors only
             return;
         }
         var userSessionModel = new UserSessionModel
@@ -114,71 +133,41 @@
         await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
         Navigation.NavigateTo("/dashboard");
     }
+
     async Task Register()
     {
-        if (!await CheckRequiredFields(_reqModel)) return;
-        var model = await _registerService.Register(_reqModel);
+        var model = await _registerService.Register(_registerModel);
         if (!model.Response.IsSuccess)
         {
-            await _injectService.ErrorMessage(model.Response.Message);
+            await _injectService.ErrorMessage(model.Response.Message); // Keep this for server-side errors only
             return;
         }
         await _injectService.SuccessMessage(model.Response.Message);
-        _isRegister = false;
-        _reqModel = new();
+        _isRegister = false; // Switch back to login form after successful registration
+        _loginModel = new();
+        _registerModel = new();
         StateHasChanged();
-    }
-    async Task<bool> CheckRequiredFields(LoginRequestModel _reqModel)
-    {
-        if (string.IsNullOrEmpty(_reqModel.UserName))
-        {
-            await _injectService.ErrorMessage("UserName Field is Required.");
-            return false;
-        }
-        if (string.IsNullOrEmpty(_reqModel.Password))
-        {
-            await _injectService.ErrorMessage("Password Field is Required.");
-            return false;
-        }
-        if (_isRegister)
-        {
-            if (string.IsNullOrEmpty(_reqModel.Email))
-            {
-                await _injectService.ErrorMessage("Email Field is Required.");
-                return false;
-            }
-            if (string.IsNullOrEmpty(_reqModel.PhoneNo))
-            {
-                await _injectService.ErrorMessage("PhoneNo Field is Required.");
-                return false;
-            }
-            if (_reqModel.Password!=_reqModel.ConfirmPassword)
-            {
-                await _injectService.ErrorMessage("Password and Confirm Password must be the same.");
-                return false;
-            }
-        }
-        return true;
     }
 
     private void ChangePage()
     {
-        _isRegister = _isRegister ? false : true;
-        _reqModel = new();
+        _isRegister = !_isRegister; // Toggle between login and register forms
+        _loginModel = new();
+        _registerModel = new();
         StateHasChanged();
     }
 
     private void PasswordVisibility()
     {
-        isPasswordVisible = isPasswordVisible ? false : true;
+        isPasswordVisible = !isPasswordVisible;
         password = password == "password" ? "text" : "password";
         StateHasChanged();
     }
 
     private void ConfirmPasswordVisibility()
     {
-        isCPasswordVisible = isCPasswordVisible ? false : true;
+        isCPasswordVisible = !isCPasswordVisible;
         cPassword = cPassword == "password" ? "text" : "password";
         StateHasChanged();
     }
-} 
+}
