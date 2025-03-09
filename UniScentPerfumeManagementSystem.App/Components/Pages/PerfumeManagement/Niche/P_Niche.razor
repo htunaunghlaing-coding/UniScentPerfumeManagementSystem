@@ -51,11 +51,15 @@
         }
         else if (!isAuthenticated)
         {
-            <MudText Typo="Typo.h5">Redirecting to login...</MudText>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mt-4">Redirecting to login...</MudText>
+            </MudItem>
         }
         else
         {
-            <MudText Typo="Typo.h5">No perfumes found.</MudText>
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mt-4">No perfumes found.</MudText>
+            </MudItem>
         }
     </MudGrid>
 </MudContainer>

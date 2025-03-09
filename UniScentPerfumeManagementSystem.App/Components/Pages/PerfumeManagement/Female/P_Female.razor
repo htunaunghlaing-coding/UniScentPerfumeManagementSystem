@@ -1,4 +1,4 @@
-﻿@page "/designer"
+﻿@page "/female-perfumes"
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
 
@@ -7,7 +7,9 @@
     <MudGrid Class="mb-4">
         <!-- Title on the Left -->
         <MudItem xs="12" sm="6">
-            <MudText Typo="Typo.h4">Designer Perfumes</MudText>
+            <MudText Typo="Typo.h4">
+                Female Perfumes
+            </MudText>
         </MudItem>
 
         <!-- Search Bar on the Right -->
@@ -23,7 +25,7 @@
 
     <!-- Perfume Grid -->
     <MudGrid>
-        @if (filteredPerfumes != null && filteredPerfumes.Any())
+        @if (isAuthenticated && filteredPerfumes != null && filteredPerfumes.Any())
         {
             @foreach (var perfume in filteredPerfumes)
             {
@@ -49,6 +51,12 @@
                 </MudItem>
             }
         }
+        else if (!isAuthenticated)
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mt-4">Redirecting to login...</MudText>
+            </MudItem>
+        }
         else
         {
             <MudItem xs="12">
@@ -62,6 +70,7 @@
     private List<PerfumeDataModel> perfumes = new();
     private List<PerfumeDataModel> filteredPerfumes = new();
     private string searchQuery = string.Empty;
+    private bool isAuthenticated = false;
 
     [Inject]
     private AuthenticationStateProvider AuthStateProvider { get; set; }
@@ -70,13 +79,17 @@
     {
         if (firstRender)
         {
+            // Check authentication state
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+            if (!isAuthenticated)
             {
                 NavigationManager.NavigateTo("/login");
                 return;
             }
 
+            // Load female perfumes if authenticated
             await LoadPerfumes();
             StateHasChanged();
         }
@@ -84,7 +97,7 @@
 
     private async Task LoadPerfumes()
     {
-        var response = await PerfumeService.GetPerfumesByCategory("Designer");
+        var response = await PerfumeService.GetPerfumesByGender("Female");
         if (response.Response.IsSuccess)
         {
             perfumes = response.PerfumeList;
