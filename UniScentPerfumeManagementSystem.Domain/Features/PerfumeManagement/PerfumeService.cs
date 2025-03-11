@@ -108,7 +108,6 @@ public class PerfumeService
         var model = new PerfumeResponseModel();
         try
         {
-            // Query all perfumes matching the specified category
             var perfumes = await _db.TblPerfumes
                 .Where(p => p.Category == category)
                 .Select(p => new PerfumeDataModel
@@ -132,13 +131,11 @@ public class PerfumeService
                 })
                 .ToListAsync();
 
-            // Populate the response model
             model.PerfumeList = perfumes;
             model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
         }
         catch (Exception ex)
         {
-            // Handle exceptions and return an error response
             model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
         }
 
@@ -252,7 +249,6 @@ public class PerfumeService
         var model = new PerfumeResponseModel();
         try
         {
-            // Query all perfumes matching the specified gender
             var perfumes = await _db.TblPerfumes
                 .Where(p => p.Gender == gender)
                 .Select(p => new PerfumeDataModel
@@ -276,13 +272,11 @@ public class PerfumeService
                 })
                 .ToListAsync();
 
-            // Populate the response model
             model.PerfumeList = perfumes;
             model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
         }
         catch (Exception ex)
         {
-            // Handle exceptions and return an error response
             model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
         }
 

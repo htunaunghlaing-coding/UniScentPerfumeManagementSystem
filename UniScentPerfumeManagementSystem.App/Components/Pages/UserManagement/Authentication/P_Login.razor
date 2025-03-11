@@ -99,7 +99,7 @@
 @code {
     private LoginRequestModel _loginModel = new();
     private RegisterRequestModel _registerModel = new();
-    private bool _isRegister = false; // Start with the login form
+    private bool _isRegister = false; 
     private bool isPasswordVisible = false;
     private bool isCPasswordVisible = false;
     private string password = "password";
@@ -120,7 +120,7 @@
         var model = await _loginService.Login(_loginModel);
         if (!model.Response.IsSuccess)
         {
-            await _injectService.ErrorMessage(model.Response.Message); // Keep this for server-side errors only
+            await _injectService.ErrorMessage(model.Response.Message); 
             return;
         }
         var userSessionModel = new UserSessionModel
@@ -139,11 +139,11 @@
         var model = await _registerService.Register(_registerModel);
         if (!model.Response.IsSuccess)
         {
-            await _injectService.ErrorMessage(model.Response.Message); // Keep this for server-side errors only
+            await _injectService.ErrorMessage(model.Response.Message); 
             return;
         }
-        await _injectService.SuccessMessage(model.Response.Message);
-        _isRegister = false; // Switch back to login form after successful registration
+        
+        _isRegister = false;
         _loginModel = new();
         _registerModel = new();
         StateHasChanged();
@@ -151,7 +151,7 @@
 
     private void ChangePage()
     {
-        _isRegister = !_isRegister; // Toggle between login and register forms
+        _isRegister = !_isRegister; 
         _loginModel = new();
         _registerModel = new();
         StateHasChanged();

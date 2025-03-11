@@ -6,11 +6,11 @@ namespace UniScentPerfumeManagementSystem.Shared;
 
 public static partial class DevCode
 {
-    public static string ToSHA256HexHashString(this string password, string mobileNo)
+    public static string ToSHA256HexHashString(this string password, string username)
     {
         password = password.Trim();
-        mobileNo = mobileNo.Trim();
-        string saltedCode = EncodedBySalted(mobileNo);
+        username = username.Trim();
+        string saltedCode = EncodedBySalted(username);
         string hashString;
         using (var sha256 = SHA256.Create())
         {

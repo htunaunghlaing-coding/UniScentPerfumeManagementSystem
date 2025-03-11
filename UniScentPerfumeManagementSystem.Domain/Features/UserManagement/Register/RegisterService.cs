@@ -18,7 +18,6 @@ public class RegisterService
         {
             #region Check Duplicate UserName and PhoneNo
 
-            // Check if the username or phone number already exists
             var user = await _db.TblUsers.AsNoTracking().FirstOrDefaultAsync(x =>
                     x.UserName.ToLower().Trim() == reqModel.UserName.ToLower().Trim() ||
                     x.PhoneNo == reqModel.PhoneNo);
@@ -39,10 +38,8 @@ public class RegisterService
 
             #endregion
 
-            // Hash the password using the username as salt
             string hashpw = reqModel.Password.ToSHA256HexHashString(reqModel.UserName);
 
-            // Create a new user entity
             var item = new TblUser
             {
                 UserId = Guid.NewGuid().ToString(),
@@ -54,11 +51,9 @@ public class RegisterService
                 RoleCode = EnumRoleType.Customer.ToEnumDescription()
             };
 
-            // Add the user to the database
             await _db.AddAsync(item);
             await _db.SaveChangesAsync();
 
-            // Populate the response model with success message
             model.Response = SubResponseModel.GetResponseMsg("Registration Success! Thanks for registering!", true);
         }
         catch (Exception ex)

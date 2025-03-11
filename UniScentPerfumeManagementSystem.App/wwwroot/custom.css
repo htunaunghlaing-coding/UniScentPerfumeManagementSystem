@@ -134,18 +134,17 @@ main {
 }
 
 
-/* Rounded Pill Button Styling */
 .rounded-pill-button {
-    border-radius: 25px !important; /* Makes the button rounded */
-    padding: 8px 24px !important; /* Adjusts padding for better spacing */
+    border-radius: 25px !important; 
+    padding: 8px 24px !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 1cm; /* Ensures 1cm distance between text and icon */
+    gap: 1cm;
 }
 
 .rounded-pill-button:hover {
-    transform: scale(1.05); /* Slight zoom effect on hover */
+    transform: scale(1.05); 
     transition: transform 0.3s ease;
 }
 
@@ -153,7 +152,6 @@ input.input-validation-error {
     border-color: red;
 }
 
-/* Style validation messages */
 .text-danger {
     color: red;
     font-size: 0.875rem;

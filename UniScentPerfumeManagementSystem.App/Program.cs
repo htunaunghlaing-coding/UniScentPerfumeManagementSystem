@@ -1,5 +1,4 @@
 using Serilog;
-using UniScentPerfumeManagementSystem.Domain.Features.CartManagement;
 using UniScentPerfumeManagementSystem.Services;
 
 Log.Logger = new LoggerConfiguration()
@@ -16,10 +15,8 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // Load configuration (e.g., connection strings)
     var connectionString = builder.Configuration.GetConnectionString("DbConnection");
 
-    // Add services to the container
     builder.Services.AddDbContext<AppDbContext>(opt =>
         opt.UseSqlServer(connectionString),
         ServiceLifetime.Transient,
@@ -41,11 +38,9 @@ try
 
     var app = builder.Build();
 
-    // Configure the HTTP request pipeline
     if (!app.Environment.IsDevelopment())
     {
         app.UseExceptionHandler("/Error", createScopeForErrors: true);
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts .
         app.UseHsts();
     }
 

@@ -9,17 +9,14 @@
         @if (isAuthenticated && perfume != null)
         {
             <MudItem xs="12" sm="6" md="6">
-                <!-- Perfume Image -->
                 <div style="border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(150, 150, 200, 0.3); padding: 8px; background-color: #fff;">
                     <MudCardMedia Image="@perfume.PictureUrl" Height="400" Style="object-fit: contain; width: 100%;" />
                 </div>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="6">
-                <!-- Perfume Title -->
                 <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center;">@perfume.Name</MudText>
 
-                <!-- Perfume Details -->
                 <div style="padding: 16px; background-color: #fff;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
@@ -70,7 +67,6 @@
                     </table>
                 </div>
 
-                <!-- Add to Cart Button -->
                 <div style="padding: 16px; background-color: #fff;">
                     <MudButton Variant="Variant.Filled" Color="Color.Dark" Style="width: 100%; margin-top: 16px;" OnClick="() => AddToCart(perfume)">
                         <MudIcon Icon="@Icons.Material.TwoTone.AddShoppingCart" Size="Size.Medium" Style="margin-right: 0.8cm;" /> Add to Cart
@@ -103,7 +99,6 @@
     {
         if (firstRender)
         {
-            // Check authentication state
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
 
@@ -113,7 +108,6 @@
                 return;
             }
 
-            // Load perfume details if authenticated
             var response = await PerfumeService.GetPerfumeById(Id);
             if (response.Response.IsSuccess)
             {
@@ -127,6 +121,6 @@
     private void AddToCart(PerfumeDataModel perfume)
     {
         CartService.AddToCart(perfume);
-        NavigationManager.NavigateTo("/addToCart"); // Redirect to the Add to Cart page
+        NavigationManager.NavigateTo("/addToCart"); 
     }
 }

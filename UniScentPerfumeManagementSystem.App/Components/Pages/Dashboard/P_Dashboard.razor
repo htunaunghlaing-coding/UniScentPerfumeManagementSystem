@@ -3,7 +3,6 @@
 @inject PerfumeService PerfumeService
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <!-- Designer vs. Niche Perfumes Explanation -->
     <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Discover the Difference Between Designer and Niche Perfumes
     </MudText>
@@ -19,7 +18,6 @@
         appeals to fragrance enthusiasts seeking something distinctive.
     </MudText>
 
-    <!-- Top, Middle, Base Notes Explanation -->
     <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Understanding Fragrance Notes
     </MudText>
@@ -36,7 +34,6 @@
         evolution of a perfume over time.
     </MudText>
 
-    <!-- Featured Designer Perfumes -->
     <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
         Featured Designer Perfumes
     </MudText>
@@ -47,7 +44,6 @@
             {
                 <MudItem xs="12" sm="6" md="3">
                     <MudCard Elevation="25" Class="mb-4">
-                        <!-- Perfume Image -->
                         <div style="position: relative; cursor: pointer;" @onclick="@(() => NavigateToDetail(perfume.Id))">
                             <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
                             <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
@@ -56,7 +52,6 @@
                                       Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
                         </div>
 
-                        <!-- Perfume Details -->
                         <MudCardContent @onclick="@(() => NavigateToDetail(perfume.Id))" Style="cursor: pointer;">
                             <MudText Typo="Typo.subtitle2">@perfume.Name</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
@@ -72,7 +67,6 @@
         }
     </MudGrid>
 
-    <!-- See More Button for Designer Perfumes -->
     <div style="text-align: center; margin-top: 16px;">
         <MudButton Class="rounded-pill-button" Variant="Variant.Filled" Color="Color.Dark" OnClick="NavigateToDesignerPage">
             <MudText Typo="Typo.body1">See More</MudText>
@@ -80,7 +74,6 @@
         </MudButton>
     </div>
 
-    <!-- Featured Niche Perfumes -->
     <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-top: 32px; margin-bottom: 16px;">
         Featured Niche Perfumes
     </MudText>
@@ -91,7 +84,6 @@
             {
                 <MudItem xs="12" sm="6" md="3">
                     <MudCard Elevation="25" Class="mb-4">
-                        <!-- Perfume Image -->
                         <div style="position: relative; cursor: pointer;" @onclick="@(() => NavigateToDetail(perfume.Id))">
                             <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
                             <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
@@ -100,7 +92,6 @@
                                       Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
                         </div>
 
-                        <!-- Perfume Details -->
                         <MudCardContent @onclick="@(() => NavigateToDetail(perfume.Id))" Style="cursor: pointer;">
                             <MudText Typo="Typo.subtitle2">@perfume.Name</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
@@ -116,7 +107,6 @@
         }
     </MudGrid>
 
-    <!-- See More Button for Niche Perfumes -->
     <div style="text-align: center; margin-top: 16px;">
         <MudButton Class="rounded-pill-button" Variant="Variant.Filled" Color="Color.Dark" OnClick="NavigateToNichePage">
             <MudText Typo="Typo.body1">See More</MudText>
@@ -128,6 +118,7 @@
 @code {
     private List<PerfumeDataModel> featuredDesignerPerfumes = new();
     private List<PerfumeDataModel> featuredNichePerfumes = new();
+    private UserSessionModel _userSession = new();
 
     [Inject]
     private AuthenticationStateProvider AuthStateProvider { get; set; }
@@ -136,29 +127,31 @@
     {
         if (firstRender)
         {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
             {
                 NavigationManager.NavigateTo("/login");
                 return;
             }
 
-            // Fetch featured designer and niche perfumes
+            _userSession = await customAuthStateProvider.GetUserData();
+
             await LoadPerfumes();
+
             StateHasChanged();
         }
     }
 
     private async Task LoadPerfumes()
     {
-        // Fetch featured designer perfumes
         var designerResponse = await PerfumeService.GetPerfumesByCategory("Designer", new PageSettingModel { PageNo = 1, PageSize = 4 });
         if (designerResponse.Response.IsSuccess)
         {
             featuredDesignerPerfumes = designerResponse.PerfumeList;
         }
 
-        // Fetch featured niche perfumes
         var nicheResponse = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = 1, PageSize = 4 });
         if (nicheResponse.Response.IsSuccess)
         {

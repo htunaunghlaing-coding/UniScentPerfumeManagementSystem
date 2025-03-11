@@ -15,10 +15,8 @@ public class LoginService
 
         try
         {
-            // Hash the password using the username as salt
             string hashpw = requestModel.Password.ToSHA256HexHashString(requestModel.UserName);
 
-            // Check if the user exists in the database
             var user = await _db.TblUsers.AsNoTracking().FirstOrDefaultAsync(x =>
                 x.UserName == requestModel.UserName &&
                 x.Password == hashpw);
@@ -29,7 +27,6 @@ public class LoginService
                 return model;
             }
 
-            // Populate the response model with user details
             model.UserName = user.UserName;
             model.Phone = user.PhoneNo;
             model.UserId = user.UserId;

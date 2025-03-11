@@ -3,14 +3,11 @@
 @inject PerfumeService PerfumeService
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <!-- Header Section -->
     <MudGrid Class="mb-4">
-        <!-- Title on the Left -->
         <MudItem xs="12" sm="6">
             <MudText Typo="Typo.h4">Male Perfumes</MudText>
         </MudItem>
 
-        <!-- Search Bar on the Right -->
         <MudItem xs="12" sm="6" Class="d-flex justify-end align-center">
             <MudStack Row="true" Spacing="2" Style="width: 300px;">
                 <MudTextField @bind-Value="searchQuery" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="flex-grow-1" />
@@ -21,7 +18,6 @@
         </MudItem>
     </MudGrid>
 
-    <!-- Perfume Grid -->
     <MudGrid>
         @if (isAuthenticated && filteredPerfumes != null && filteredPerfumes.Any())
         {
@@ -29,7 +25,6 @@
             {
                 <MudItem xs="12" sm="6" md="3">
                     <MudCard Elevation="25" Class="mb-4">
-                        <!-- Perfume Image with Click Event -->
                         <div style="position: relative; cursor: pointer;" @onclick="@(() => NavigateToDetail(perfume.Id))">
                             <MudCardMedia Image="@perfume.PictureUrl" Height="200" />
                             <MudBadge Color="@(perfume.StockQuantity > 0 ? Color.Success : Color.Error)"
@@ -38,7 +33,6 @@
                                       Content="@(perfume.StockQuantity > 0 ? "In Stock" : "Out of Stock")" />
                         </div>
 
-                        <!-- Perfume Details with Click Event -->
                         <MudCardContent @onclick="@(() => NavigateToDetail(perfume.Id))" Style="cursor: pointer;">
                             <MudText Typo="Typo.subtitle1">@perfume.Name</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@perfume.CompanyName</MudText>
@@ -69,6 +63,7 @@
     private List<PerfumeDataModel> filteredPerfumes = new();
     private string searchQuery = string.Empty;
     private bool isAuthenticated = false;
+    private UserSessionModel _userSession = new();
 
     [Inject]
     private AuthenticationStateProvider AuthStateProvider { get; set; }
@@ -77,8 +72,9 @@
     {
         if (firstRender)
         {
-            // Check authentication state
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
             isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
 
             if (!isAuthenticated)
@@ -87,7 +83,8 @@
                 return;
             }
 
-            // Load male perfumes if authenticated
+            _userSession = await customAuthStateProvider.GetUserData();
+
             await LoadPerfumes();
             StateHasChanged();
         }
@@ -99,7 +96,7 @@
         if (response.Response.IsSuccess)
         {
             perfumes = response.PerfumeList;
-            filteredPerfumes = perfumes; // Initialize filtered list with all perfumes
+            filteredPerfumes = perfumes;
         }
         else
         {
@@ -111,7 +108,7 @@
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
-            filteredPerfumes = perfumes; // Show all perfumes if search query is empty
+            filteredPerfumes = perfumes;
         }
         else
         {
@@ -124,7 +121,7 @@
             ).ToList();
         }
 
-        StateHasChanged(); // Trigger UI update
+        StateHasChanged();
     }
 
     private void NavigateToDetail(int id)

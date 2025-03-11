@@ -5,4 +5,7 @@ global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Logi
 global using UniScentPerfumeManagementSystem.Shared;
 global using System.ComponentModel.DataAnnotations;
 global using UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
+global using UniScentPerfumeManagementSystem.Domain.Features.CartManagement;
+global using UniScentPerfumeManagementSystem.Domain.Models;
+
 
