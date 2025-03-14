@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
 @inject CartService CartService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid>
@@ -91,9 +92,6 @@
 
     private PerfumeDataModel perfume;
     private bool isAuthenticated = false;
-
-    [Inject]
-    private AuthenticationStateProvider AuthStateProvider { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

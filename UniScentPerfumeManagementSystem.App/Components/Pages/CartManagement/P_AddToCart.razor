@@ -2,6 +2,8 @@
 @using UniScentPerfumeManagementSystem.Services
 @inject NavigationManager NavigationManager
 @inject CartService CartService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<P_AddToCart> _logger
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
@@ -130,48 +132,73 @@
     private UserSessionModel _userSession = new();
     private CartResponseModel cartResponse = new();
 
-    [Inject]
-    private AuthenticationStateProvider AuthStateProvider { get; set; }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
-
-            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
-            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-
-            if (!isAuthenticated)
+            try
             {
-                NavigationManager.NavigateTo("/login");
-                return;
+                var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+                var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+                isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+                if (!isAuthenticated)
+                {
+                    NavigationManager.NavigateTo("/login");
+                    return;
+                }
+
+                _userSession = await customAuthStateProvider.GetUserData();
+
+                // Load cart items
+                cartResponse = CartService.GetCartItems();
+                StateHasChanged();
             }
-
-            _userSession = await customAuthStateProvider.GetUserData();
-
-            // Load cart items
-            cartResponse = CartService.GetCartItems();
-            StateHasChanged();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.ToString());
+            }
         }
     }
 
     private void IncreaseQuantity(int perfumeId)
     {
-        cartResponse = CartService.UpdateQuantity(perfumeId, 1);
-        StateHasChanged();
+        try
+        {
+            cartResponse = CartService.UpdateQuantity(perfumeId, 1);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.ToString());
+        }
     }
 
     private void DecreaseQuantity(int perfumeId)
     {
-        cartResponse = CartService.UpdateQuantity(perfumeId, -1);
-        StateHasChanged();
+        try
+        {
+            cartResponse = CartService.UpdateQuantity(perfumeId, -1);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.ToString());
+        }
     }
 
     private void RemoveFromCart(int perfumeId)
     {
-        cartResponse = CartService.RemoveFromCart(perfumeId);
-        StateHasChanged();
+        try
+        {
+            cartResponse = CartService.RemoveFromCart(perfumeId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.ToString());
+        }
     }
 
     private void NavigateToCheckout()

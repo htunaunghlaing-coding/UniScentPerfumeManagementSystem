@@ -5,6 +5,7 @@
 @inject RegisterService _registerService
 @inject NavigationManager Navigation
 @rendermode RenderMode.InteractiveServer
+@inject ILogger<P_Login> _logger
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
@@ -117,44 +118,66 @@
 
     async Task SignIn()
     {
-        var model = await _loginService.Login(_loginModel);
-        if (!model.Response.IsSuccess)
+        try
         {
-            await _injectService.ErrorMessage(model.Response.Message); 
-            return;
-        }
-        var userSessionModel = new UserSessionModel
+            var model = await _loginService.Login(_loginModel);
+            if (!model.Response.IsSuccess)
             {
-                UserName = model.UserName,
-                Role = model.Role,
-                UserId = model.UserId,
-            };
-        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
-        await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
-        Navigation.NavigateTo("/dashboard");
+                await _injectService.ErrorMessage(model.Response.Message);
+                return;
+            }
+            var userSessionModel = new UserSessionModel
+                {
+                    UserName = model.UserName,
+                    Role = model.Role,
+                    UserId = model.UserId,
+                };
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+            await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
+            Navigation.NavigateTo("/dashboard");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.ToString());
+        }
     }
 
     async Task Register()
     {
-        var model = await _registerService.Register(_registerModel);
-        if (!model.Response.IsSuccess)
+        try
         {
-            await _injectService.ErrorMessage(model.Response.Message); 
-            return;
+            var model = await _registerService.Register(_registerModel);
+            if (!model.Response.IsSuccess)
+            {
+                await _injectService.ErrorMessage(model.Response.Message);
+                return;
+            }
+
+            _isRegister = false;
+            _loginModel = new();
+            _registerModel = new();
+            StateHasChanged();
         }
-        
-        _isRegister = false;
-        _loginModel = new();
-        _registerModel = new();
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.ToString());
+        }
     }
 
     private void ChangePage()
     {
-        _isRegister = !_isRegister; 
-        _loginModel = new();
-        _registerModel = new();
-        StateHasChanged();
+        try
+        {
+            _isRegister = !_isRegister;
+            _loginModel = new();
+            _registerModel = new();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.ToString());
+        }
+        
     }
 
     private void PasswordVisibility()

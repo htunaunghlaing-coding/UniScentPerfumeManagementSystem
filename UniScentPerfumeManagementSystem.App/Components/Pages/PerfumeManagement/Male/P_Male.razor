@@ -1,6 +1,7 @@
 ﻿@page "/male-perfumes"
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid Class="mb-4">
@@ -64,9 +65,6 @@
     private string searchQuery = string.Empty;
     private bool isAuthenticated = false;
     private UserSessionModel _userSession = new();
-
-    [Inject]
-    private AuthenticationStateProvider AuthStateProvider { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

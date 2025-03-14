@@ -1,6 +1,8 @@
 ﻿@page "/dashboard"
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<P_Dashboard> _logger
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudText Typo="Typo.h4" Style="font-weight: bold; text-align: center; margin-bottom: 16px;">
@@ -119,9 +121,6 @@
     private List<PerfumeDataModel> featuredDesignerPerfumes = new();
     private List<PerfumeDataModel> featuredNichePerfumes = new();
     private UserSessionModel _userSession = new();
-
-    [Inject]
-    private AuthenticationStateProvider AuthStateProvider { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
