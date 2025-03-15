@@ -1,4 +1,4 @@
-﻿global using UniScentPerfumeManagementSystem.Database.EFModels;
+﻿global using UniScentPerfumeManagementSystem.Database.EfModels;
 global using UniScentPerfumeManagementSystem.Domain.Models;
 global using Microsoft.EntityFrameworkCore;
 global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login;

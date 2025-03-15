@@ -7,7 +7,7 @@ global using Microsoft.EntityFrameworkCore;
 global using MudBlazor.Services;
 global using UniScentPerfumeManagementSystem.App.Components;
 global using UniScentPerfumeManagementSystem.App.Services;
-global using UniScentPerfumeManagementSystem.Database.EFModels;
+global using UniScentPerfumeManagementSystem.Database.EfModels;
 global using UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
 global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
 global using UniScentPerfumeManagementSystem.Shared.DapperServices;

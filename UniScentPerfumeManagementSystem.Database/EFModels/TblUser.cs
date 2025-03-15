@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UniScentPerfumeManagementSystem.Database.EFModels;
+namespace UniScentPerfumeManagementSystem.Database.EfModels;
 
 public partial class TblUser
 {

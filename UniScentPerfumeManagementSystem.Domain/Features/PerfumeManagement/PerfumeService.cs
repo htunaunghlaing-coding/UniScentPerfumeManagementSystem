@@ -1,4 +1,6 @@
-﻿namespace UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
+﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+
+namespace UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
 
 public class PerfumeService
 {

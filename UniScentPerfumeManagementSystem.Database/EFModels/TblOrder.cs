@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UniScentPerfumeManagementSystem.Database.EFModels;
+namespace UniScentPerfumeManagementSystem.Database.EfModels;
 
 public partial class TblOrder
 {
@@ -21,7 +21,11 @@ public partial class TblOrder
 
     public DateTime? UpdatedAt { get; set; }
 
+    public virtual ICollection<TblOrderAddress> TblOrderAddresses { get; set; } = new List<TblOrderAddress>();
+
     public virtual ICollection<TblOrderItem> TblOrderItems { get; set; } = new List<TblOrderItem>();
+
+    public virtual ICollection<TblPaymentDetail> TblPaymentDetails { get; set; } = new List<TblPaymentDetail>();
 
     public virtual TblUser User { get; set; } = null!;
 }

@@ -1,4 +1,6 @@
 using Serilog;
+using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services;
 using UniScentPerfumeManagementSystem.Services;
 
 Log.Logger = new LoggerConfiguration()
@@ -35,6 +37,7 @@ try
     builder.Services.AddScoped<RegisterService>();
     builder.Services.AddScoped<PerfumeService>();
     builder.Services.AddScoped<CartService>();
+    builder.Services.AddScoped<CheckoutService>();
 
     var app = builder.Build();
 

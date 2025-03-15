@@ -1,4 +1,5 @@
-﻿using UniScentPerfumeManagementSystem.Shared.Enums;
+﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Shared.Enums;
 
 namespace UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
 

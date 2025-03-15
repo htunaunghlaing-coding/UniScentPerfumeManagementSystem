@@ -2,7 +2,7 @@
 {
     public class CartService
     {
-        private List<CartItem> _cartItems = new();
+        private List<CartItemModel> _cartItems = new();
 
         public CartResponseModel AddToCart(PerfumeDataModel perfume)
         {
@@ -17,7 +17,7 @@
                 }
                 else
                 {
-                    _cartItems.Add(new CartItem { Perfume = perfume, Quantity = 1 });
+                    _cartItems.Add(new CartItemModel { Perfume = perfume, Quantity = 1 });
                     response.Response = SubResponseModel.GetResponseMsg("Perfume added to cart successfully.", true);
                 }
 
@@ -31,7 +31,7 @@
             return response;
         }
 
-        public CartResponseModel RemoveFromCart(int perfumeId)
+        public async Task<CartResponseModel> RemoveFromCart(int perfumeId)
         {
             var response = new CartResponseModel();
             try
@@ -40,15 +40,14 @@
                 if (itemToRemove != null)
                 {
                     _cartItems.Remove(itemToRemove);
+                    response.CartItems = _cartItems;
+                    response.TotalPrice = GetTotalPrice();
                     response.Response = SubResponseModel.GetResponseMsg("Perfume removed from cart successfully.", true);
                 }
                 else
                 {
                     response.Response = SubResponseModel.GetResponseMsg("Perfume not found in cart.", false);
                 }
-
-                response.CartItems = _cartItems;
-                response.TotalPrice = GetTotalPrice();
             }
             catch (Exception ex)
             {
@@ -57,7 +56,7 @@
             return response;
         }
 
-        public CartResponseModel UpdateQuantity(int perfumeId, int change)
+        public async Task<CartResponseModel> UpdateQuantity(int perfumeId, int change)
         {
             var response = new CartResponseModel();
             try
@@ -72,15 +71,14 @@
                         item.Quantity = 1;
                     }
 
+                    response.CartItems = _cartItems;
+                    response.TotalPrice = GetTotalPrice();
                     response.Response = SubResponseModel.GetResponseMsg("Quantity updated successfully.", true);
                 }
                 else
                 {
                     response.Response = SubResponseModel.GetResponseMsg("Perfume not found in cart.", false);
                 }
-
-                response.CartItems = _cartItems;
-                response.TotalPrice = GetTotalPrice();
             }
             catch (Exception ex)
             {
@@ -89,11 +87,12 @@
             return response;
         }
 
-        public CartResponseModel GetCartItems()
+        public Task<CartResponseModel> GetCartItems()
         {
             var response = new CartResponseModel();
             try
             {
+                // Simulate fetching cart items (replace with actual async logic if needed)
                 response.CartItems = _cartItems;
                 response.TotalPrice = GetTotalPrice();
                 response.Response = SubResponseModel.GetResponseMsg("Cart items retrieved successfully.", true);
@@ -102,7 +101,7 @@
             {
                 response.Response = SubResponseModel.GetResponseMsg($"Error retrieving cart items: {ex.Message}", false);
             }
-            return response;
+            return Task.FromResult(response); // Wrap the result in a Task
         }
 
         private decimal GetTotalPrice()
@@ -113,7 +112,7 @@
 
     public class CartResponseModel
     {
-        public List<CartItem> CartItems { get; set; } = new();
+        public List<CartItemModel> CartItems { get; set; } = new();
         public decimal TotalPrice { get; set; }
         public BaseSubResponseModel Response { get; set; }
     }

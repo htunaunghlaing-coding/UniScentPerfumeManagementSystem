@@ -1,0 +1,339 @@
+﻿@page "/checkout"
+@inject CartService _cartService
+@inject CheckoutService _checkoutService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<P_Checkout> _logger
+@using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement
+@using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Enums
+@using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services
+@using UniScentPerfumeManagementSystem.Services
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Class="pa-4">
+        <!-- Display Success/Error Messages -->
+        @if (!string.IsNullOrEmpty(responseMessage))
+        {
+            <MudAlert Severity="@(isSuccess ? Severity.Success : Severity.Error)">
+                @responseMessage
+            </MudAlert>
+        }
+
+        <MudGrid>
+            <!-- Left Side: Payment Details -->
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h5" Class="mb-4">Payment Details</MudText>
+
+                <MudSelect T="PaymentMethod" @bind-Value="selectedPaymentMethod" Label="Payment Method" Variant="Variant.Outlined" Class="mb-4"
+                           Required="true" RequiredError="Payment method is required." Placeholder="Select payment type">
+                    @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
+                    {
+                        <MudSelectItem T="PaymentMethod" Value="@method">@method</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField @bind-Value="cardNumber" Label="Card Number" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Card number is required." />
+                <MudTextField @bind-Value="expirationDate" Label="Expiration Date" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Expiration date is required." />
+                <MudTextField @bind-Value="securityCode" Label="Security Code" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Security code is required." />
+                <MudTextField @bind-Value="nameOnCard" Label="Name on Card" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Name on card is required." />
+
+                <MudText Typo="Typo.h6" Class="mb-2">Billing Address</MudText>
+                <MudTextField @bind-Value="billingAddress.Country" Label="Country" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Country is required." />
+                <MudTextField @bind-Value="billingAddress.FullName" Label="Full Name" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Full name is required." />
+                <MudTextField @bind-Value="billingAddress.AddressLine1" Label="Address Line 1" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Address line 1 is required." />
+                <MudTextField @bind-Value="billingAddress.AddressLine2" Label="Address Line 2" Variant="Variant.Outlined" Class="mb-4" />
+                <MudTextField @bind-Value="billingAddress.City" Label="City" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="City is required." />
+                <MudTextField @bind-Value="billingAddress.State" Label="State" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="State is required." />
+                <MudTextField @bind-Value="billingAddress.PostalCode" Label="Postal Code" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Postal code is required." />
+                <MudTextField @bind-Value="billingAddress.PhoneNo" Label="Phone Number" Variant="Variant.Outlined" Class="mb-4"
+                              Required="true" RequiredError="Phone number is required." />
+
+                <MudText Typo="Typo.h6" Class="mb-2">Add a Tip</MudText>
+                <div class="tips-container">
+                    <button class="tip-button" @onclick="() => SetTips(0)">0%</button>
+                    <button class="tip-button" @onclick="() => SetTips(10)">10%</button>
+                    <button class="tip-button" @onclick="() => SetTips(15)">15%</button>
+                    <button class="tip-button" @onclick="() => SetTips(20)">20%</button>
+                </div>
+            </MudItem>
+
+            <!-- Right Side: Cart Summary -->
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h5" Class="mb-4">Order Summary</MudText>
+
+                @if (cartItems != null && cartItems.Any())
+                {
+                    @foreach (var item in cartItems)
+                    {
+                        <div class="cart-item mb-6">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="perfume-container position-relative">
+                                    <MudImage Src="@item.Perfume.PictureUrl" Class="perfume-image mr-4" />
+                                    <span class="quantity-circle-top">@item.Quantity</span>
+                                </div>
+                                <div style="flex-grow: 1;">
+                                    <MudText Typo="Typo.h5" Class="perfume-name">@item.Perfume.Name</MudText>
+                                    <MudText Typo="Typo.body2">@item.Perfume.SizeML ml</MudText>
+                                </div>
+                                <div class="d-flex flex-column align-end">
+                                    <MudText Typo="Typo.subtitle2">$@(item.Perfume.Price * item.Quantity)</MudText>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <MudDivider Class="my-4" />
+
+                    <div class="price-summary">
+                        <MudText Typo="Typo.subtitle1" Class="price-row">
+                            Subtotal: <span class="price-value">$@CalculateSubtotal()</span>
+                        </MudText>
+                        <MudText Typo="Typo.subtitle1" Class="price-row">
+                            Tips (@tipsPercentage%): <span class="price-value">$@CalculateTips()</span>
+                        </MudText>
+                        <MudText Typo="Typo.h6" Class="price-row">
+                            Total: <span class="price-value">$@CalculateTotalWithTips()</span>
+                        </MudText>
+                    </div>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="ValidateAndPlaceOrder" Disabled="@isLoading">
+                        @(isLoading ? "Processing..." : "Place Order")
+                    </MudButton>
+                }
+                else
+                {
+                    <MudText Typo="Typo.h5" Class="text-center">Your cart is empty.</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="NavigateToShop">
+                        Return to Shop
+                    </MudButton>
+                }
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+<style>
+    /* Styling for the cart items */
+    .cart-item {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 1rem;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-top: 1.5rem;
+    }
+
+    /* Styling for the perfume image */
+    .perfume-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        position: relative;
+    }
+
+    /* Styling for the quantity circle in the top-right corner */
+    .quantity-circle-top {
+        position: absolute;
+        top: 1.5px; /* Moved even closer to the image */
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #333; /* Darker grey color */
+        color: white;
+        border-radius: 50%;
+        font-size: 0.8rem; /* Slightly smaller font size */
+        font-weight: bold;
+    }
+
+    /* Styling for the perfume name */
+    .perfume-name {
+        font-size: 1rem; /* Adjust font size to match image size */
+        font-weight: bold;
+    }
+
+    /* Styling for the price summary */
+    .price-summary {
+        margin-top: 1rem;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .price-value {
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Styling for the tips container */
+    .tips-container {
+        display: flex;
+        gap: 8px; /* Space between buttons */
+        align-items: center;
+    }
+
+    /* Base styling for the tip buttons */
+    .tip-button {
+        background-color: black; /* Black background */
+        color: white; /* White text */
+        border: none; /* Remove default button border */
+        border-radius: 20px; /* Rounded corners */
+        padding: 8px 16px; /* Padding for better touch target */
+        font-size: 0.9rem; /* Slightly larger font size */
+        font-weight: bold; /* Bold text */
+        cursor: pointer; /* Pointer cursor on hover */
+        transition: all 0.2s ease; /* Smooth transitions */
+    }
+
+        /* Hover effect for the tip buttons */
+        .tip-button:hover {
+            background-color: #444; /* Lighter shade on hover */
+            transform: scale(1.05); /* Slightly enlarge on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        }
+
+        /* Active state for the tip buttons */
+        .tip-button:active {
+            background-color: #333; /* Darker shade when clicked */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            transform: scale(0.95); /* Slightly shrink when pressed */
+        }
+</style>
+
+@code {
+    private PaymentMethod selectedPaymentMethod = PaymentMethod.None;
+    private string cardNumber = string.Empty;
+    private string expirationDate = string.Empty;
+    private string securityCode = string.Empty;
+    private string nameOnCard = string.Empty;
+    private BillingAddressModel billingAddress = new();
+    private decimal tipsPercentage = 0;
+    private List<CartItemModel> cartItems = new();
+    private bool isLoading = false;
+    private string responseMessage = string.Empty;
+    private bool isSuccess = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+
+            var cartResponse = await _cartService.GetCartItems();
+            cartItems = cartResponse.CartItems;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToShop()
+    {
+        Navigation.NavigateTo("/shop");
+    }
+
+    private void SetTips(decimal percentage)
+    {
+        tipsPercentage = percentage;
+    }
+
+    private decimal CalculateSubtotal()
+    {
+        return cartItems.Sum(item => item.Perfume.Price * item.Quantity);
+    }
+
+    private decimal CalculateTips()
+    {
+        return CalculateSubtotal() * (tipsPercentage / 100);
+    }
+
+    private decimal CalculateTotalWithTips()
+    {
+        return CalculateSubtotal() + CalculateTips();
+    }
+
+    private async Task ValidateAndPlaceOrder()
+    {
+        // Reset response message
+        responseMessage = string.Empty;
+
+        // Check if all required fields are filled
+        if (string.IsNullOrEmpty(selectedPaymentMethod.ToString()) ||
+            string.IsNullOrEmpty(cardNumber) ||
+            string.IsNullOrEmpty(expirationDate) ||
+            string.IsNullOrEmpty(securityCode) ||
+            string.IsNullOrEmpty(nameOnCard) ||
+            string.IsNullOrEmpty(billingAddress.Country) ||
+            string.IsNullOrEmpty(billingAddress.FullName) ||
+            string.IsNullOrEmpty(billingAddress.AddressLine1) ||
+            string.IsNullOrEmpty(billingAddress.City) ||
+            string.IsNullOrEmpty(billingAddress.State) ||
+            string.IsNullOrEmpty(billingAddress.PostalCode) ||
+            string.IsNullOrEmpty(billingAddress.PhoneNo))
+        {
+            responseMessage = "Please fill out all required fields.";
+            isSuccess = false;
+            return;
+        }
+
+        // If all validations pass, proceed to place the order
+        await PlaceOrder();
+    }
+
+    private async Task PlaceOrder()
+    {
+        isLoading = true;
+        try
+        {
+            var request = new OrderRequestModel
+                {
+                    UserId = 1, // Replace with actual user ID from session
+                    Items = cartItems.Select(item => new OrderItemRequestModel
+                    {
+                        PerfumeId = item.Perfume.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.Perfume.Price
+                    }).ToList(),
+                    TotalAmount = CalculateTotalWithTips(),
+                    PaymentMethod = selectedPaymentMethod,
+                    BillingAddress = billingAddress,
+                    TipsPercentage = tipsPercentage
+                };
+
+            var response = await _checkoutService.ProcessOrderAsync(request);
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                responseMessage = response.Message;
+                isSuccess = true;
+                Navigation.NavigateTo("/orderConfirmation");
+            }
+        }
+        catch (Exception ex)
+        {
+            responseMessage = $"Error placing order: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

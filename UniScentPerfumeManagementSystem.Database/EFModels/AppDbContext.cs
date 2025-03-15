@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace UniScentPerfumeManagementSystem.Database.EFModels;
+namespace UniScentPerfumeManagementSystem.Database.EfModels;
 
 public partial class AppDbContext : DbContext
 {
@@ -17,7 +17,11 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TblOrder> TblOrders { get; set; }
 
+    public virtual DbSet<TblOrderAddress> TblOrderAddresses { get; set; }
+
     public virtual DbSet<TblOrderItem> TblOrderItems { get; set; }
+
+    public virtual DbSet<TblPaymentDetail> TblPaymentDetails { get; set; }
 
     public virtual DbSet<TblPerfume> TblPerfumes { get; set; }
 
@@ -50,6 +54,31 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_TblOrder_UserId");
         });
 
+        modelBuilder.Entity<TblOrderAddress>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__TblOrder__3214EC07016092A6");
+
+            entity.ToTable("TblOrderAddress");
+
+            entity.Property(e => e.AddressLine1).HasMaxLength(255);
+            entity.Property(e => e.AddressLine2).HasMaxLength(255);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Country).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FullName).HasMaxLength(255);
+            entity.Property(e => e.PhoneNo).HasMaxLength(15);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.State).HasMaxLength(100);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.TblOrderAddresses)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TblOrderA__Order__467D75B8");
+        });
+
         modelBuilder.Entity<TblOrderItem>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__TblOrder__3214EC07451944FB");
@@ -70,6 +99,24 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.PerfumeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TblOrderI__Perfu__3CF40B7E");
+        });
+
+        modelBuilder.Entity<TblPaymentDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__TblPayme__3214EC072F860575");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.Property(e => e.TipsPercentage).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.TotalAmountWithTips).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.TblPaymentDetails)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TblPaymen__Order__42ACE4D4");
         });
 
         modelBuilder.Entity<TblPerfume>(entity =>

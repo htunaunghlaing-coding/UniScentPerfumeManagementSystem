@@ -7,6 +7,14 @@
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
+        <!-- Display Success/Error Messages -->
+        @if (!string.IsNullOrEmpty(cartResponse.Response?.Message))
+        {
+            <MudAlert Severity="@(cartResponse.Response.IsSuccess ? Severity.Success : Severity.Error)">
+                @cartResponse.Response.Message
+            </MudAlert>
+        }
+
         @if (isAuthenticated)
         {
             @if (cartResponse.CartItems != null && cartResponse.CartItems.Any())
@@ -152,12 +160,12 @@
                 _userSession = await customAuthStateProvider.GetUserData();
 
                 // Load cart items
-                cartResponse = CartService.GetCartItems();
+                cartResponse = await CartService.GetCartItems();
                 StateHasChanged();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.ToString());
+                _logger.LogError(ex, "Error loading cart or authentication data.");
             }
         }
     }
@@ -166,12 +174,12 @@
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, 1);
+            cartResponse = CartService.UpdateQuantity(perfumeId, 1).Result; // Synchronous call
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            _logger.LogError(ex, "Error increasing quantity.");
         }
     }
 
@@ -179,12 +187,12 @@
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, -1);
+            cartResponse = CartService.UpdateQuantity(perfumeId, -1).Result; // Synchronous call
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            _logger.LogError(ex, "Error decreasing quantity.");
         }
     }
 
@@ -192,17 +200,38 @@
     {
         try
         {
-            cartResponse = CartService.RemoveFromCart(perfumeId);
+            cartResponse = CartService.RemoveFromCart(perfumeId).Result; // Synchronous call
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            _logger.LogError(ex, "Error removing item from cart.");
         }
     }
 
     private void NavigateToCheckout()
     {
-        NavigationManager.NavigateTo("/checkout");
+        try
+        {
+            if (!isAuthenticated)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            if (cartResponse.CartItems == null || !cartResponse.CartItems.Any())
+            {
+                _logger.LogError("Cannot navigate to checkout: Cart is empty.");
+                cartResponse.Response = SubResponseModel.GetResponseMsg("Your cart is empty.", false);
+                StateHasChanged();
+                return;
+            }
+
+            NavigationManager.NavigateTo("/checkout");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error navigating to checkout.");
+        }
     }
 }
