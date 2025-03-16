@@ -5,7 +5,7 @@ namespace UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
 public class OrderResponseModel
 {
     public int OrderId { get; set; }
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public decimal TotalAmount { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public string Status { get; set; } = string.Empty;

@@ -7,8 +7,6 @@ public partial class TblOrder
 {
     public int Id { get; set; }
 
-    public int UserId { get; set; }
-
     public DateTime OrderDate { get; set; }
 
     public decimal TotalAmount { get; set; }
@@ -20,6 +18,8 @@ public partial class TblOrder
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public int UserId { get; set; }
 
     public virtual ICollection<TblOrderAddress> TblOrderAddresses { get; set; } = new List<TblOrderAddress>();
 

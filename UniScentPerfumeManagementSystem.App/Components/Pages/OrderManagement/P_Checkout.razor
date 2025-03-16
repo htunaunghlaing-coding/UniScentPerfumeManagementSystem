@@ -215,6 +215,8 @@
 </style>
 
 @code {
+    private UserSessionModel _userSession = new();
+    private OrderRequestModel _reqModel = new();
     private PaymentMethod selectedPaymentMethod = PaymentMethod.None;
     private string cardNumber = string.Empty;
     private string expirationDate = string.Empty;
@@ -231,16 +233,18 @@
     {
         if (firstRender)
         {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            if (!authState.User.Identity.IsAuthenticated)
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
             {
                 Navigation.NavigateTo("/login");
                 return;
             }
 
-            var cartResponse = await _cartService.GetCartItems();
-            cartItems = cartResponse.CartItems;
-            StateHasChanged();
+            _userSession = await customAuthStateProvider.GetUserData(); // Populate UserSessionModel
+
+            await LoadCartItems(); // Call the new method to load cart items
         }
     }
 
@@ -302,9 +306,10 @@
         isLoading = true;
         try
         {
+            // Use the string UserId from the session model
             var request = new OrderRequestModel
                 {
-                    UserId = 1, // Replace with actual user ID from session
+                    UserId = _userSession.UserId, // Keep UserId as a string
                     Items = cartItems.Select(item => new OrderItemRequestModel
                     {
                         PerfumeId = item.Perfume.Id,
@@ -317,7 +322,10 @@
                     TipsPercentage = tipsPercentage
                 };
 
+            // Call the updated CheckoutService.ProcessOrderAsync method
             var response = await _checkoutService.ProcessOrderAsync(request);
+
+            // Handle the response
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
                 responseMessage = response.Message;
@@ -334,6 +342,25 @@
         {
             isLoading = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task LoadCartItems()
+    {
+        try
+        {
+            _reqModel.UserId = _userSession.UserId; // Ensure UserId is a string
+            var cartResponse = await _cartService.GetCartItems();
+            cartItems = cartResponse.CartItems; // Assign cart items to the local variable
+        }
+        catch (Exception ex)
+        {
+            responseMessage = $"Error loading cart items: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            StateHasChanged(); // Ensure the UI is updated after loading cart items
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
 
-public class OrderItemRequestModel
+public class OrderItemRequestModel : BaseRequestModel
 {
     public int PerfumeId { get; set; }
     public int Quantity { get; set; }

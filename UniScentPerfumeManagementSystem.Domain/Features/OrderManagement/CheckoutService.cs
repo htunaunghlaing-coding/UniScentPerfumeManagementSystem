@@ -1,7 +1,4 @@
-﻿using UniScentPerfumeManagementSystem.Database.EfModels;
-using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Enums;
-
-namespace UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services;
+﻿using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
 
 public class CheckoutService
 {
@@ -15,18 +12,28 @@ public class CheckoutService
     public async Task<OrderResponseModel> ProcessOrderAsync(OrderRequestModel request)
     {
         var response = new OrderResponseModel();
+
         try
         {
+            if (request.Items == null || !request.Items.Any())
+            {
+                response.Message = "Order must contain at least one item.";
+                return response;
+            }
+
             var order = new TblOrder
             {
-                UserId = request.UserId,
+                UserId =  int.Parse(request.UserId.ToString()),
                 TotalAmount = request.TotalAmount,
-                PaymentMethod = request.PaymentMethod.ToString(), // Convert enum to string
+                PaymentMethod = request.PaymentMethod.ToString(),
                 OrderDate = DateTime.UtcNow,
                 Status = "Pending",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                TblOrderItems = new List<TblOrderItem>(),
+                TblOrderAddresses = new List<TblOrderAddress>()
             };
 
+            // Add order items
             foreach (var item in request.Items)
             {
                 order.TblOrderItems.Add(new TblOrderItem
@@ -37,6 +44,7 @@ public class CheckoutService
                 });
             }
 
+            // Add billing address
             order.TblOrderAddresses.Add(new TblOrderAddress
             {
                 Country = request.BillingAddress.Country,
@@ -50,11 +58,13 @@ public class CheckoutService
                 CreatedAt = DateTime.UtcNow
             });
 
+            // Save the order to the database
             await _db.TblOrders.AddAsync(order);
             await _db.SaveChangesAsync();
 
+            // Populate the response model
             response.OrderId = order.Id;
-            response.UserId = order.UserId;
+            response.UserId = request.UserId; // Keep UserId as a string in the response
             response.TotalAmount = order.TotalAmount;
             response.PaymentMethod = request.PaymentMethod;
             response.Status = order.Status;
@@ -62,18 +72,23 @@ public class CheckoutService
             response.Items = order.TblOrderItems.Select(item => new OrderItemResponseModel
             {
                 PerfumeId = item.PerfumeId,
-                Name = item.Perfume.Name,
+                Name = item.Perfume?.Name,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                SizeMl = item.Perfume.SizeMl,
-                PictureUrl = item.Perfume.PictureUrl
+                SizeMl = item.Perfume?.SizeMl,
+                PictureUrl = item.Perfume?.PictureUrl
             }).ToList();
             response.Message = "Order placed successfully.";
         }
         catch (Exception ex)
         {
-            response.Message = $"Error placing order: {ex.Message}";
+            // Log the exception (use ILogger for production)
+            Console.Error.WriteLine($"Error placing order: {ex.Message}. StackTrace: {ex.StackTrace}");
+
+            // Return a generic error message to the client
+            response.Message = "An unexpected error occurred while placing the order.";
         }
+
         return response;
     }
 }

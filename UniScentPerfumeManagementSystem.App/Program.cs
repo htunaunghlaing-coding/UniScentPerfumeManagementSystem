@@ -1,5 +1,6 @@
 using Serilog;
 using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
 using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services;
 using UniScentPerfumeManagementSystem.Services;
 
@@ -24,6 +25,11 @@ try
         ServiceLifetime.Transient,
         ServiceLifetime.Transient);
 
+    builder.Services.AddServerSideBlazor(options =>
+    {
+        options.DetailedErrors = true;
+    });
+
     builder.Services.AddSingleton<DapperService>(x => new DapperService(connectionString));
 
     builder.Services.AddRazorComponents()
@@ -38,6 +44,7 @@ try
     builder.Services.AddScoped<PerfumeService>();
     builder.Services.AddScoped<CartService>();
     builder.Services.AddScoped<CheckoutService>();
+    builder.Services.AddScoped<OrderConfirmService>();
 
     var app = builder.Build();
 
