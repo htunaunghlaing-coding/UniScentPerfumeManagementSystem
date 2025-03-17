@@ -13,3 +13,5 @@ global using UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Regi
 global using UniScentPerfumeManagementSystem.Shared.DapperServices;
 global using UniScentPerfumeManagementSystem.Domain.Models;
 global using MudBlazor;
+global using UniScentPerfumeManagementSystem.Domain.Features.CartManagement;
+global using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;

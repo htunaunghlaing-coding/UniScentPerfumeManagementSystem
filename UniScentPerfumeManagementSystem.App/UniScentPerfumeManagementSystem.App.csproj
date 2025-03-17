@@ -7,11 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Remove="Components\Pages\OrderManagement\P_OrderConfirm.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="Components\Pages\OrderManagement\P_OrderConfirm.razor" />
 		<None Include="wwwroot\bootstrap\bootstrap.min.css.map" />
 		<None Include="wwwroot\js\bootstrap.bundle.min.js" />
 		<None Include="wwwroot\js\jquery.min.js" />
@@ -37,14 +32,6 @@
 
 	<ItemGroup>
 	  <Folder Include="wwwroot\images\Niche\Female\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="Components\Pages\OrderManagement\P_OrderConfirm.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="Components\Pages\OrderManagement\P_OrderConfirm.razor" />
 	</ItemGroup>
 
 </Project>

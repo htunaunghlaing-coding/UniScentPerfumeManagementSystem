@@ -51,10 +51,11 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+            entity.Property(e => e.UserId).HasMaxLength(50);
 
             entity.HasOne(d => d.User).WithMany(p => p.TblOrders)
+                .HasPrincipalKey(p => p.UserId)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TblOrder_UserId");
         });
 
@@ -158,11 +159,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<TblUser>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__TblUser__3214EC0756509803");
+            entity.HasKey(e => e.Id).HasName("PK__TblUser__3214EC07F5A994A6");
 
             entity.ToTable("TblUser");
 
-            entity.HasIndex(e => e.Email, "UQ__TblUser__A9D10534E258268C").IsUnique();
+            entity.HasIndex(e => e.UserId, "UQ_TblUser_UserId").IsUnique();
 
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
@@ -174,12 +175,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasMaxLength(50);
             entity.Property(e => e.UserName).HasMaxLength(255);
-
-            entity.HasOne(d => d.RoleCodeNavigation).WithMany(p => p.TblUsers)
-                .HasPrincipalKey(p => p.RoleCode)
-                .HasForeignKey(d => d.RoleCode)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TblUser_RoleCode");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -4,10 +4,9 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILogger<P_Checkout> _logger
+@inject IJSRuntime JSRuntime
 @using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement
 @using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Enums
-@using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services
-@using UniScentPerfumeManagementSystem.Services
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
@@ -106,7 +105,7 @@
                         </MudText>
                     </div>
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="ValidateAndPlaceOrder" Disabled="@isLoading">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="ShowConfirmationDialog" Disabled="@isLoading">
                         @(isLoading ? "Processing..." : "Place Order")
                     </MudButton>
                 }
@@ -216,8 +215,7 @@
 
 @code {
     private UserSessionModel _userSession = new();
-    private OrderRequestModel _reqModel = new();
-    private PaymentMethod selectedPaymentMethod = PaymentMethod.None;
+    private PaymentMethod selectedPaymentMethod;
     private string cardNumber = string.Empty;
     private string expirationDate = string.Empty;
     private string securityCode = string.Empty;
@@ -234,8 +232,8 @@
         if (firstRender)
         {
             var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
-
             var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+
             if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
             {
                 Navigation.NavigateTo("/login");
@@ -243,8 +241,7 @@
             }
 
             _userSession = await customAuthStateProvider.GetUserData(); // Populate UserSessionModel
-
-            await LoadCartItems(); // Call the new method to load cart items
+            await LoadCartItems(); // Load cart items
         }
     }
 
@@ -273,32 +270,18 @@
         return CalculateSubtotal() + CalculateTips();
     }
 
-    private async Task ValidateAndPlaceOrder()
+    private async Task ShowConfirmationDialog()
     {
-        // Reset response message
-        responseMessage = string.Empty;
+        var confirmationMessage = @"
+Are you sure you want to checkout these perfumes?
+";
 
-        // Check if all required fields are filled
-        if (string.IsNullOrEmpty(selectedPaymentMethod.ToString()) ||
-            string.IsNullOrEmpty(cardNumber) ||
-            string.IsNullOrEmpty(expirationDate) ||
-            string.IsNullOrEmpty(securityCode) ||
-            string.IsNullOrEmpty(nameOnCard) ||
-            string.IsNullOrEmpty(billingAddress.Country) ||
-            string.IsNullOrEmpty(billingAddress.FullName) ||
-            string.IsNullOrEmpty(billingAddress.AddressLine1) ||
-            string.IsNullOrEmpty(billingAddress.City) ||
-            string.IsNullOrEmpty(billingAddress.State) ||
-            string.IsNullOrEmpty(billingAddress.PostalCode) ||
-            string.IsNullOrEmpty(billingAddress.PhoneNo))
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", confirmationMessage);
+
+        if (confirmed)
         {
-            responseMessage = "Please fill out all required fields.";
-            isSuccess = false;
-            return;
+            await PlaceOrder();
         }
-
-        // If all validations pass, proceed to place the order
-        await PlaceOrder();
     }
 
     private async Task PlaceOrder()
@@ -306,10 +289,30 @@
         isLoading = true;
         try
         {
-            // Use the string UserId from the session model
+            // Validate all required fields
+            if (string.IsNullOrEmpty(selectedPaymentMethod.ToString()) ||
+                string.IsNullOrEmpty(cardNumber) ||
+                string.IsNullOrEmpty(expirationDate) ||
+                string.IsNullOrEmpty(securityCode) ||
+                string.IsNullOrEmpty(nameOnCard) ||
+                string.IsNullOrEmpty(billingAddress.Country) ||
+                string.IsNullOrEmpty(billingAddress.FullName) ||
+                string.IsNullOrEmpty(billingAddress.AddressLine1) ||
+                string.IsNullOrEmpty(billingAddress.City) ||
+                string.IsNullOrEmpty(billingAddress.State) ||
+                string.IsNullOrEmpty(billingAddress.PostalCode) ||
+                string.IsNullOrEmpty(billingAddress.PhoneNo))
+            {
+                responseMessage = "Please fill out all required fields.";
+                isSuccess = false;
+                StateHasChanged();
+                return;
+            }
+
+            // Prepare the order request
             var request = new OrderRequestModel
                 {
-                    UserId = _userSession.UserId, // Keep UserId as a string
+                    UserId = _userSession.UserId,
                     Items = cartItems.Select(item => new OrderItemRequestModel
                     {
                         PerfumeId = item.Perfume.Id,
@@ -322,15 +325,22 @@
                     TipsPercentage = tipsPercentage
                 };
 
-            // Call the updated CheckoutService.ProcessOrderAsync method
+            // Process the order using the CheckoutService
             var response = await _checkoutService.ProcessOrderAsync(request);
 
             // Handle the response
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
-                responseMessage = response.Message;
+                responseMessage = "Thanks for shopping our perfumes. Enjoy your scent, Man!";
                 isSuccess = true;
-                Navigation.NavigateTo("/orderConfirmation");
+
+                // Clear the cart after successful order placement
+                cartItems.Clear();
+            }
+            else
+            {
+                responseMessage = response?.Message ?? "An unknown error occurred.";
+                isSuccess = false;
             }
         }
         catch (Exception ex)
@@ -349,7 +359,6 @@
     {
         try
         {
-            _reqModel.UserId = _userSession.UserId; // Ensure UserId is a string
             var cartResponse = await _cartService.GetCartItems();
             cartItems = cartResponse.CartItems; // Assign cart items to the local variable
         }

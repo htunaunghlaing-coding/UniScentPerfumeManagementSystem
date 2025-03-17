@@ -19,7 +19,7 @@ public partial class TblOrder
 
     public DateTime? UpdatedAt { get; set; }
 
-    public int UserId { get; set; }
+    public string? UserId { get; set; }
 
     public virtual ICollection<TblOrderAddress> TblOrderAddresses { get; set; } = new List<TblOrderAddress>();
 
@@ -27,5 +27,5 @@ public partial class TblOrder
 
     public virtual ICollection<TblPaymentDetail> TblPaymentDetails { get; set; } = new List<TblPaymentDetail>();
 
-    public virtual TblUser User { get; set; } = null!;
+    public virtual TblUser? User { get; set; }
 }

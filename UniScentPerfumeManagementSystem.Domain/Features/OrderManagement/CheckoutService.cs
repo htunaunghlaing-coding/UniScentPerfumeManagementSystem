@@ -1,4 +1,7 @@
-﻿using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
+﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using System.Threading.Tasks;
+
+namespace UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
 
 public class CheckoutService
 {
@@ -9,28 +12,35 @@ public class CheckoutService
         _db = db;
     }
 
-    public async Task<OrderResponseModel> ProcessOrderAsync(OrderRequestModel request)
+    // Process the order and save it with "Success" status
+    public async Task<OrderResponseModel?> ProcessOrderAsync(OrderRequestModel request)
     {
-        var response = new OrderResponseModel();
+        // Validate the request
+        if (request.Items == null || !request.Items.Any())
+        {
+            Console.WriteLine("Order must contain at least one item.");
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(request.UserId))
+        {
+            Console.WriteLine("UserId cannot be null or empty.");
+            return null;
+        }
 
         try
         {
-            if (request.Items == null || !request.Items.Any())
-            {
-                response.Message = "Order must contain at least one item.";
-                return response;
-            }
-
+            // Create the order object
             var order = new TblOrder
             {
-                UserId =  int.Parse(request.UserId.ToString()),
+                UserId = request.UserId,
                 TotalAmount = request.TotalAmount,
                 PaymentMethod = request.PaymentMethod.ToString(),
                 OrderDate = DateTime.UtcNow,
-                Status = "Pending",
+                Status = "Success", // Set status to "Success" immediately
                 CreatedAt = DateTime.UtcNow,
-                TblOrderItems = new List<TblOrderItem>(),
-                TblOrderAddresses = new List<TblOrderAddress>()
+                TblOrderItems = new List<TblOrderItem>(), // Initialize collection
+                TblOrderAddresses = new List<TblOrderAddress>() // Initialize collection
             };
 
             // Add order items
@@ -60,35 +70,24 @@ public class CheckoutService
 
             // Save the order to the database
             await _db.TblOrders.AddAsync(order);
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(); // This should cascade changes to related entities
 
             // Populate the response model
-            response.OrderId = order.Id;
-            response.UserId = request.UserId; // Keep UserId as a string in the response
-            response.TotalAmount = order.TotalAmount;
-            response.PaymentMethod = request.PaymentMethod;
-            response.Status = order.Status;
-            response.OrderDate = order.OrderDate;
-            response.Items = order.TblOrderItems.Select(item => new OrderItemResponseModel
+            return new OrderResponseModel
             {
-                PerfumeId = item.PerfumeId,
-                Name = item.Perfume?.Name,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                SizeMl = item.Perfume?.SizeMl,
-                PictureUrl = item.Perfume?.PictureUrl
-            }).ToList();
-            response.Message = "Order placed successfully.";
+                OrderId = order.Id,
+                UserId = order.UserId,
+                TotalAmount = order.TotalAmount,
+                PaymentMethod = request.PaymentMethod,
+                Status = order.Status, // "Success"
+                Message = "Order placed successfully."
+            };
         }
         catch (Exception ex)
         {
-            // Log the exception (use ILogger for production)
-            Console.Error.WriteLine($"Error placing order: {ex.Message}. StackTrace: {ex.StackTrace}");
-
-            // Return a generic error message to the client
-            response.Message = "An unexpected error occurred while placing the order.";
+            // Log the exception (optional)
+            Console.WriteLine($"Error placing order: {ex.Message}");
+            return null;
         }
-
-        return response;
     }
 }

@@ -1,8 +1,6 @@
 using Serilog;
-using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Domain.Features.CartManagement;
 using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
-using UniScentPerfumeManagementSystem.Domain.Features.OrderManagement.Services;
-using UniScentPerfumeManagementSystem.Services;
 
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -47,12 +45,6 @@ try
     builder.Services.AddScoped<OrderConfirmService>();
 
     var app = builder.Build();
-
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseExceptionHandler("/Error", createScopeForErrors: true);
-        app.UseHsts();
-    }
 
     app.UseHttpsRedirection();
     app.UseStaticFiles();

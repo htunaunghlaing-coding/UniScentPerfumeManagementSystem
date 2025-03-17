@@ -10,6 +10,4 @@ public partial class TblRole
     public string RoleCode { get; set; } = null!;
 
     public string RoleName { get; set; } = null!;
-
-    public virtual ICollection<TblUser> TblUsers { get; set; } = new List<TblUser>();
 }
