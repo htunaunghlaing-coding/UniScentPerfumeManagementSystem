@@ -1,4 +1,5 @@
 ﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Shared;
 using System.Threading.Tasks;
 
 namespace UniScentPerfumeManagementSystem.Domain.Features.OrderManagement;
@@ -12,18 +13,16 @@ public class CheckoutService
         _db = db;
     }
 
-    public async Task<OrderResponseModel?> ProcessOrderAsync(OrderRequestModel request)
+    public async Task<Result<OrderResponseModel>> ProcessOrderAsync(OrderRequestModel request)
     {
         if (request.Items == null || !request.Items.Any())
         {
-            Console.WriteLine("Order must contain at least one item.");
-            return null;
+            return Result<OrderResponseModel>.FailureResult("Order must contain at least one item.");
         }
 
         if (string.IsNullOrEmpty(request.UserId))
         {
-            Console.WriteLine("UserId cannot be null or empty.");
-            return null;
+            return Result<OrderResponseModel>.FailureResult("UserId cannot be null or empty.");
         }
 
         try
@@ -34,10 +33,10 @@ public class CheckoutService
                 TotalAmount = request.TotalAmount,
                 PaymentMethod = request.PaymentMethod.ToString(),
                 OrderDate = DateTime.UtcNow,
-                Status = "Success", 
+                Status = "Success",
                 CreatedAt = DateTime.UtcNow,
-                TblOrderItems = new List<TblOrderItem>(), 
-                TblOrderAddresses = new List<TblOrderAddress>() 
+                TblOrderItems = new List<TblOrderItem>(),
+                TblOrderAddresses = new List<TblOrderAddress>()
             };
 
             foreach (var item in request.Items)
@@ -64,22 +63,21 @@ public class CheckoutService
             });
 
             await _db.TblOrders.AddAsync(order);
-            await _db.SaveChangesAsync(); 
+            await _db.SaveChangesAsync();
 
-            return new OrderResponseModel
+            return Result<OrderResponseModel>.SuccessResult(new OrderResponseModel
             {
                 OrderId = order.Id,
                 UserId = order.UserId,
                 TotalAmount = order.TotalAmount,
                 PaymentMethod = request.PaymentMethod,
-                Status = order.Status, 
+                Status = order.Status,
                 Message = "Order placed successfully."
-            };
+            }, "Order processed successfully.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error placing order: {ex.Message}");
-            return null;
+            return Result<OrderResponseModel>.FailureResult($"Error placing order: {ex.Message}");
         }
     }
 }

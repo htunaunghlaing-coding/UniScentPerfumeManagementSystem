@@ -1,4 +1,5 @@
 ﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Shared;
 
 namespace UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Login;
 
@@ -11,10 +12,8 @@ public class LoginService
         _db = db;
     }
 
-    public async Task<LoginResponseModel> Login(LoginRequestModel requestModel)
+    public async Task<Result<LoginResponseModel>> Login(LoginRequestModel requestModel)
     {
-        var model = new LoginResponseModel();
-
         try
         {
             string hashpw = requestModel.Password.ToSHA256HexHashString(requestModel.UserName);
@@ -25,21 +24,22 @@ public class LoginService
 
             if (user == null)
             {
-                model.Response = SubResponseModel.GetResponseMsg("Invalid username or password.", false);
-                return model;
+                return Result<LoginResponseModel>.FailureResult("Invalid username or password.");
             }
 
-            model.UserName = user.UserName;
-            model.Phone = user.PhoneNo;
-            model.UserId = user.UserId;
-            model.Role = user.RoleCode;
-            model.Response = SubResponseModel.GetResponseMsg("Warming Welcome. Enjoy managing your perfumes!", true);
+            var responseModel = new LoginResponseModel
+            {
+                UserName = user.UserName,
+                Phone = user.PhoneNo,
+                UserId = user.UserId,
+                Role = user.RoleCode
+            };
+
+            return Result<LoginResponseModel>.SuccessResult(responseModel, "Warming Welcome. Enjoy ordering your perfumes!");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<LoginResponseModel>.FailureResult(ex.Message);
         }
-
-        return model;
     }
 }

@@ -144,6 +144,8 @@
         {
             try
             {
+                _logger.LogInformation("Initializing AddToCart page.");
+
                 var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
 
                 var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
@@ -151,58 +153,112 @@
 
                 if (!isAuthenticated)
                 {
+                    _logger.LogWarning("User not authenticated. Redirecting to login.");
                     NavigationManager.NavigateTo("/login");
                     return;
                 }
 
                 _userSession = await customAuthStateProvider.GetUserData();
 
-                cartResponse = await CartService.GetCartItems();
+                var result = await CartService.GetCartItems();
+                if (result.IsSuccess)
+                {
+                    cartResponse = result.Data;
+                    _logger.LogInformation("Successfully loaded {ItemCount} items into the cart.", cartResponse.CartItems?.Count ?? 0);
+                }
+                else
+                {
+                    _logger.LogError("Error loading cart items: {Message}", result.Message);
+                    cartResponse.Response = SubResponseModel.GetResponseMsg(result.Message, false);
+                }
+
                 StateHasChanged();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading cart or authentication data.");
+                _logger.LogError(ex, "An unexpected error occurred while initializing the AddToCart page.");
             }
         }
     }
 
-    private void IncreaseQuantity(int perfumeId)
+    private async Task IncreaseQuantity(int perfumeId)
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, 1).Result; 
-            StateHasChanged();
+            _logger.LogInformation("Increasing quantity for perfume ID: {PerfumeId}", perfumeId);
+
+            var result = await CartService.UpdateQuantity(perfumeId, 1);
+            if (result.IsSuccess)
+            {
+                cartResponse = result.Data;
+                _logger.LogInformation("Successfully increased quantity for perfume ID: {PerfumeId}", perfumeId);
+            }
+            else
+            {
+                _logger.LogError("Error increasing quantity for perfume ID: {PerfumeId}. Error: {ErrorMessage}", perfumeId, result.Message);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error increasing quantity.");
+            _logger.LogError(ex, "An unexpected error occurred while increasing quantity for perfume ID: {PerfumeId}", perfumeId);
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
-    private void DecreaseQuantity(int perfumeId)
+    private async Task DecreaseQuantity(int perfumeId)
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, -1).Result; 
-            StateHasChanged();
+            _logger.LogInformation("Decreasing quantity for perfume ID: {PerfumeId}", perfumeId);
+
+            var result = await CartService.UpdateQuantity(perfumeId, -1);
+            if (result.IsSuccess)
+            {
+                cartResponse = result.Data;
+                _logger.LogInformation("Successfully decreased quantity for perfume ID: {PerfumeId}", perfumeId);
+            }
+            else
+            {
+                _logger.LogError("Error decreasing quantity for perfume ID: {PerfumeId}. Error: {ErrorMessage}", perfumeId, result.Message);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error decreasing quantity.");
+            _logger.LogError(ex, "An unexpected error occurred while decreasing quantity for perfume ID: {PerfumeId}", perfumeId);
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
-    private void RemoveFromCart(int perfumeId)
+    private async Task RemoveFromCart(int perfumeId)
     {
         try
         {
-            cartResponse = CartService.RemoveFromCart(perfumeId).Result; 
-            StateHasChanged();
+            _logger.LogInformation("Removing perfume ID: {PerfumeId} from the cart.", perfumeId);
+
+            var result = await CartService.RemoveFromCart(perfumeId);
+            if (result.IsSuccess)
+            {
+                cartResponse = result.Data;
+                _logger.LogInformation("Successfully removed perfume ID: {PerfumeId} from the cart.", perfumeId);
+            }
+            else
+            {
+                _logger.LogError("Error removing perfume ID: {PerfumeId} from the cart. Error: {ErrorMessage}", perfumeId, result.Message);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing item from cart.");
+            _logger.LogError(ex, "An unexpected error occurred while removing perfume ID: {PerfumeId} from the cart.", perfumeId);
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
@@ -210,25 +266,29 @@
     {
         try
         {
+            _logger.LogInformation("Attempting to navigate to checkout.");
+
             if (!isAuthenticated)
             {
+                _logger.LogWarning("User not authenticated. Redirecting to login.");
                 NavigationManager.NavigateTo("/login");
                 return;
             }
 
             if (cartResponse.CartItems == null || !cartResponse.CartItems.Any())
             {
-                _logger.LogError("Cannot navigate to checkout: Cart is empty.");
+                _logger.LogWarning("Cannot navigate to checkout: Cart is empty.");
                 cartResponse.Response = SubResponseModel.GetResponseMsg("Your cart is empty.", false);
                 StateHasChanged();
                 return;
             }
 
+            _logger.LogInformation("Navigating to checkout page.");
             NavigationManager.NavigateTo("/checkout");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error navigating to checkout.");
+            _logger.LogError(ex, "An unexpected error occurred while navigating to checkout.");
         }
     }
 }

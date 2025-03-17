@@ -126,50 +126,114 @@
     {
         if (firstRender)
         {
-            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
-
-            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
-            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+            try
             {
-                NavigationManager.NavigateTo("/login");
-                return;
+                _logger.LogInformation("Initializing dashboard page.");
+
+                var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+                var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+                if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+                {
+                    _logger.LogWarning("User not authenticated. Redirecting to login.");
+                    NavigationManager.NavigateTo("/login");
+                    return;
+                }
+
+                _userSession = await customAuthStateProvider.GetUserData();
+
+                await LoadPerfumes();
             }
-
-            _userSession = await customAuthStateProvider.GetUserData();
-
-            await LoadPerfumes();
-
-            StateHasChanged();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while initializing the dashboard page.");
+            }
+            finally
+            {
+                StateHasChanged();
+            }
         }
     }
 
     private async Task LoadPerfumes()
     {
-        var designerResponse = await PerfumeService.GetPerfumesByCategory("Designer", new PageSettingModel { PageNo = 1, PageSize = 4 });
-        if (designerResponse.Response.IsSuccess)
+        try
         {
-            featuredDesignerPerfumes = designerResponse.PerfumeList;
+            _logger.LogInformation("Fetching featured designer perfumes.");
+
+            var designerResult = await PerfumeService.GetPerfumesByCategory("Designer", new PageSettingModel { PageNo = 1, PageSize = 4 });
+            if (designerResult.IsSuccess)
+            {
+                featuredDesignerPerfumes = designerResult.Data.PerfumeList;
+                _logger.LogInformation("Successfully loaded {PerfumeCount} featured designer perfumes.", featuredDesignerPerfumes.Count);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to load designer perfumes. Error: {ErrorMessage}", designerResult.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while loading designer perfumes.");
         }
 
-        var nicheResponse = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = 1, PageSize = 4 });
-        if (nicheResponse.Response.IsSuccess)
+        try
         {
-            featuredNichePerfumes = nicheResponse.PerfumeList;
+            _logger.LogInformation("Fetching featured niche perfumes.");
+
+            var nicheResult = await PerfumeService.GetPerfumesByCategory("Niche", new PageSettingModel { PageNo = 1, PageSize = 4 });
+            if (nicheResult.IsSuccess)
+            {
+                featuredNichePerfumes = nicheResult.Data.PerfumeList;
+                _logger.LogInformation("Successfully loaded {PerfumeCount} featured niche perfumes.", featuredNichePerfumes.Count);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to load niche perfumes. Error: {ErrorMessage}", nicheResult.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while loading niche perfumes.");
         }
     }
 
     private void NavigateToDetail(int id)
     {
-        NavigationManager.NavigateTo($"/perfume-detail/{id}");
+        try
+        {
+            _logger.LogInformation("Navigating to perfume detail page for perfume ID: {PerfumeId}", id);
+            NavigationManager.NavigateTo($"/perfume-detail/{id}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while navigating to perfume detail page.");
+        }
     }
 
     private void NavigateToDesignerPage()
     {
-        NavigationManager.NavigateTo("/designer");
+        try
+        {
+            _logger.LogInformation("Navigating to designer perfumes page.");
+            NavigationManager.NavigateTo("/designer");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while navigating to the designer perfumes page.");
+        }
     }
 
     private void NavigateToNichePage()
     {
-        NavigationManager.NavigateTo("/niche");
+        try
+        {
+            _logger.LogInformation("Navigating to niche perfumes page.");
+            NavigationManager.NavigateTo("/niche");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while navigating to the niche perfumes page.");
+        }
     }
 }

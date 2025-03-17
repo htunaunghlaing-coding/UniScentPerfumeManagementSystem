@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject PerfumeService PerfumeService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<P_Niche> _logger
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid Class="mb-4">
@@ -70,61 +71,102 @@
     {
         if (firstRender)
         {
-            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
-
-            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
-            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-
-            if (!isAuthenticated)
+            try
             {
-                NavigationManager.NavigateTo("/login");
-                return;
+                _logger.LogInformation("Loading niche perfumes page.");
+
+                var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+                var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+                isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+                if (!isAuthenticated)
+                {
+                    _logger.LogWarning("User not authenticated. Redirecting to login.");
+                    NavigationManager.NavigateTo("/login");
+                    return;
+                }
+
+                _userSession = await customAuthStateProvider.GetUserData();
+
+                await LoadPerfumes();
             }
-
-            _userSession = await customAuthStateProvider.GetUserData();
-
-            await LoadPerfumes();
-            StateHasChanged();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while initializing the niche perfumes page.");
+            }
+            finally
+            {
+                StateHasChanged();
+            }
         }
     }
 
     private async Task LoadPerfumes()
     {
-        var response = await PerfumeService.GetPerfumesByCategory("Niche");
-        if (response.Response.IsSuccess)
+        try
         {
-            perfumes = response.PerfumeList;
-            filteredPerfumes = perfumes;
+            _logger.LogInformation("Fetching perfumes by category: Niche");
+
+            var result = await PerfumeService.GetPerfumesByCategory("Niche");
+            if (result.IsSuccess)
+            {
+                perfumes = result.Data.PerfumeList;
+                filteredPerfumes = perfumes;
+
+                _logger.LogInformation("Successfully loaded {PerfumeCount} niche perfumes.", perfumes.Count);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to load perfumes. Error: {ErrorMessage}", result.Message);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Failed to load perfumes.");
+            _logger.LogError(ex, "An unexpected error occurred while loading perfumes.");
         }
     }
 
     private void FilterPerfumes()
     {
-        if (string.IsNullOrWhiteSpace(searchQuery))
+        try
         {
-            filteredPerfumes = perfumes;
-        }
-        else
-        {
-            var query = searchQuery.Trim().ToLower();
-            filteredPerfumes = perfumes.Where(p =>
-                p.Name.ToLower().Contains(query) ||
-                p.CompanyName.ToLower().Contains(query) ||
-                p.Price.ToString().Contains(query) ||
-                p.SizeML.ToString().Contains(query)
-            ).ToList();
-        }
+            if (string.IsNullOrWhiteSpace(searchQuery))
+            {
+                _logger.LogInformation("Resetting filtered perfumes to all available perfumes.");
+                filteredPerfumes = perfumes;
+            }
+            else
+            {
+                var query = searchQuery.Trim().ToLower();
+                filteredPerfumes = perfumes.Where(p =>
+                    p.Name.ToLower().Contains(query) ||
+                    p.CompanyName.ToLower().Contains(query) ||
+                    p.Price.ToString().Contains(query) ||
+                    p.SizeML.ToString().Contains(query)
+                ).ToList();
 
-        StateHasChanged();
+                _logger.LogInformation("Filtered perfumes based on search query: {SearchQuery}. Found {FilteredCount} matches.", searchQuery, filteredPerfumes.Count);
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while filtering perfumes.");
+        }
     }
 
     private void NavigateToDetail(int id)
     {
-        Console.WriteLine($"Navigating to /perfume-detail/{id}");
-        NavigationManager.NavigateTo($"/perfume-detail/{id}");
+        try
+        {
+            _logger.LogInformation("Navigating to perfume detail page for perfume ID: {PerfumeId}", id);
+            NavigationManager.NavigateTo($"/perfume-detail/{id}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while navigating to perfume detail page.");
+        }
     }
 }

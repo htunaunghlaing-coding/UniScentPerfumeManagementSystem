@@ -12,6 +12,13 @@
         <div class="card-body">
             @if (!_isRegister)
             {
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger text-center mb-3">
+                        @errorMessage
+                    </div>
+                }
+
                 <h1 class="h3 mb-3 fw-normal text-center">Sign In</h1>
                 <EditForm Model="_loginModel" OnValidSubmit="SignIn">
                     <DataAnnotationsValidator />
@@ -100,18 +107,20 @@
 @code {
     private LoginRequestModel _loginModel = new();
     private RegisterRequestModel _registerModel = new();
-    private bool _isRegister = false; 
+    private bool _isRegister = false;
     private bool isPasswordVisible = false;
     private bool isCPasswordVisible = false;
     private string password = "password";
     private string cPassword = "password";
     private string passwordIcon => isPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
     private string cPasswordIcon => isCPasswordVisible ? "bi bi-eye-fill" : "bi bi-eye-slash-fill";
+    private string errorMessage = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            _logger.LogInformation("Login page rendered.");
             StateHasChanged();
         }
     }
@@ -120,25 +129,37 @@
     {
         try
         {
-            var model = await _loginService.Login(_loginModel);
-            if (!model.Response.IsSuccess)
+            _logger.LogInformation("Attempting to sign in user: {UserName}", _loginModel.UserName);
+
+            var result = await _loginService.Login(_loginModel);
+            if (!result.IsSuccess)
             {
-                await _injectService.ErrorMessage(model.Response.Message);
+                _logger.LogWarning("Login failed for user: {UserName}. Error: {ErrorMessage}", _loginModel.UserName, result.Message);
+                errorMessage = result.Message;
+                StateHasChanged();
                 return;
             }
+
+            errorMessage = string.Empty;
+
             var userSessionModel = new UserSessionModel
                 {
-                    UserName = model.UserName,
-                    Role = model.Role,
-                    UserId = model.UserId,
+                    UserName = result.Data.UserName,
+                    Role = result.Data.Role,
+                    UserId = result.Data.UserId,
                 };
+
             var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
             await customAuthStateProvider.UpdateAuthenticationState(userSessionModel);
+
+            _logger.LogInformation("User {UserName} logged in successfully.", userSessionModel.UserName);
             Navigation.NavigateTo("/dashboard");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            _logger.LogError(ex, "An unexpected error occurred during login.");
+            errorMessage = "An unexpected error occurred. Please try again later.";
+            StateHasChanged();
         }
     }
 
@@ -146,21 +167,31 @@
     {
         try
         {
-            var model = await _registerService.Register(_registerModel);
-            if (!model.Response.IsSuccess)
+            _logger.LogInformation("Attempting to register user: {UserName}", _registerModel.UserName);
+
+            var result = await _registerService.Register(_registerModel);
+            if (!result.IsSuccess)
             {
-                await _injectService.ErrorMessage(model.Response.Message);
+                _logger.LogWarning("Registration failed for user: {UserName}. Error: {ErrorMessage}", _registerModel.UserName, result.Message);
+                errorMessage = result.Message;
+                StateHasChanged();
                 return;
             }
 
             _isRegister = false;
             _loginModel = new();
             _registerModel = new();
+
+            errorMessage = string.Empty;
+
+            _logger.LogInformation("User {UserName} registered successfully.", _registerModel.UserName);
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.ToString());
+            _logger.LogError(ex, "An unexpected error occurred during registration.");
+            errorMessage = "An unexpected error occurred. Please try again later.";
+            StateHasChanged();
         }
     }
 
@@ -168,29 +199,51 @@
     {
         try
         {
+            _logger.LogInformation("Switching between login and register pages. Current state: {IsRegister}", _isRegister);
+
             _isRegister = !_isRegister;
             _loginModel = new();
             _registerModel = new();
+
+            errorMessage = string.Empty;
+
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            _logger.LogError(ex, "An unexpected error occurred while switching pages.");
         }
-        
     }
 
     private void PasswordVisibility()
     {
-        isPasswordVisible = !isPasswordVisible;
-        password = password == "password" ? "text" : "password";
-        StateHasChanged();
+        try
+        {
+            isPasswordVisible = !isPasswordVisible;
+            password = password == "password" ? "text" : "password";
+
+            _logger.LogInformation("Password visibility toggled. Visible: {IsPasswordVisible}", isPasswordVisible);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while toggling password visibility.");
+        }
     }
 
     private void ConfirmPasswordVisibility()
     {
-        isCPasswordVisible = !isCPasswordVisible;
-        cPassword = cPassword == "password" ? "text" : "password";
-        StateHasChanged();
+        try
+        {
+            isCPasswordVisible = !isCPasswordVisible;
+            cPassword = cPassword == "password" ? "text" : "password";
+
+            _logger.LogInformation("Confirm password visibility toggled. Visible: {IsCPasswordVisible}", isCPasswordVisible);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while toggling confirm password visibility.");
+        }
     }
 }

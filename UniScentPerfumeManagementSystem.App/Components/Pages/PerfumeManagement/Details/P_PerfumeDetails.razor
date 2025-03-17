@@ -3,6 +3,7 @@
 @inject PerfumeService PerfumeService
 @inject CartService CartService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<P_PerfumeDetails> _logger
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudGrid>
@@ -96,28 +97,53 @@
     {
         if (firstRender)
         {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-
-            if (!isAuthenticated)
+            try
             {
-                NavigationManager.NavigateTo("/login");
-                return;
-            }
+                _logger.LogInformation("Loading perfume detail page for ID: {PerfumeId}", Id);
 
-            var response = await PerfumeService.GetPerfumeById(Id);
-            if (response.Response.IsSuccess)
+                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+                if (!isAuthenticated)
+                {
+                    _logger.LogWarning("User not authenticated. Redirecting to login.");
+                    NavigationManager.NavigateTo("/login");
+                    return;
+                }
+
+                var result = await PerfumeService.GetPerfumeById(Id);
+                if (result.IsSuccess)
+                {
+                    perfume = result.Data.Perfume;
+                    _logger.LogInformation("Successfully loaded perfume details for ID: {PerfumeId}. Name: {PerfumeName}", Id, perfume.Name);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to load perfume details for ID: {PerfumeId}. Error: {ErrorMessage}", Id, result.Message);
+                }
+            }
+            catch (Exception ex)
             {
-                perfume = response.Perfume;
+                _logger.LogError(ex, "An unexpected error occurred while loading perfume details for ID: {PerfumeId}", Id);
             }
-
-            StateHasChanged();
+            finally
+            {
+                StateHasChanged();
+            }
         }
     }
 
     private void AddToCart(PerfumeDataModel perfume)
     {
-        CartService.AddToCart(perfume);
-        NavigationManager.NavigateTo("/addToCart"); 
+        try
+        {
+            _logger.LogInformation("Adding perfume to cart. Perfume ID: {PerfumeId}, Name: {PerfumeName}", perfume.Id, perfume.Name);
+            CartService.AddToCart(perfume);
+            NavigationManager.NavigateTo("/addToCart");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while adding perfume to cart. Perfume ID: {PerfumeId}", perfume.Id);
+        }
     }
 }

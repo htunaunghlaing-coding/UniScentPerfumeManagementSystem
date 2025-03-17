@@ -1,4 +1,5 @@
 ﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Shared;
 using UniScentPerfumeManagementSystem.Shared.Enums;
 
 namespace UniScentPerfumeManagementSystem.Domain.Features.UserManagement.Register;
@@ -12,9 +13,8 @@ public class RegisterService
         _db = db;
     }
 
-    public async Task<LoginResponseModel> Register(RegisterRequestModel reqModel)
+    public async Task<Result<LoginResponseModel>> Register(RegisterRequestModel reqModel)
     {
-        var model = new LoginResponseModel();
         try
         {
             #region Check Duplicate UserName and PhoneNo
@@ -27,13 +27,11 @@ public class RegisterService
             {
                 if (user.UserName.ToLower().Trim() == reqModel.UserName.ToLower().Trim())
                 {
-                    model.Response = SubResponseModel.GetResponseMsg("Your UserName is already exist.", false);
-                    return model;
+                    return Result<LoginResponseModel>.FailureResult("Your UserName is already exist.");
                 }
                 if (user.PhoneNo == reqModel.PhoneNo)
                 {
-                    model.Response = SubResponseModel.GetResponseMsg("Your PhoneNo is already exist.", false);
-                    return model;
+                    return Result<LoginResponseModel>.FailureResult("Your PhoneNo is already exist.");
                 }
             }
 
@@ -55,13 +53,19 @@ public class RegisterService
             await _db.AddAsync(item);
             await _db.SaveChangesAsync();
 
-            model.Response = SubResponseModel.GetResponseMsg("Registration Success! Thanks for registering!", true);
+            var responseModel = new LoginResponseModel
+            {
+                UserName = item.UserName,
+                Phone = item.PhoneNo,
+                UserId = item.UserId,
+                Role = item.RoleCode
+            };
+
+            return Result<LoginResponseModel>.SuccessResult(responseModel, "Registration Success! Thanks for registering!");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<LoginResponseModel>.FailureResult(ex.Message);
         }
-
-        return model;
     }
 }

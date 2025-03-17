@@ -4,61 +4,51 @@ public class CartService
 {
     private List<CartItemModel> _cartItems = new();
 
-    public CartResponseModel AddToCart(PerfumeDataModel perfume)
+    public Result<CartResponseModel> AddToCart(PerfumeDataModel perfume)
     {
-        var response = new CartResponseModel();
         try
         {
             var existingItem = _cartItems.FirstOrDefault(item => item.Perfume.Id == perfume.Id);
             if (existingItem != null)
             {
                 existingItem.Quantity++;
-                response.Response = SubResponseModel.GetResponseMsg("Quantity updated successfully.", true);
+                return Result<CartResponseModel>.SuccessResult(GetCartResponse(), "Quantity updated successfully.");
             }
             else
             {
                 _cartItems.Add(new CartItemModel { Perfume = perfume, Quantity = 1 });
-                response.Response = SubResponseModel.GetResponseMsg("Perfume added to cart successfully.", true);
+                return Result<CartResponseModel>.SuccessResult(GetCartResponse(), "Perfume added to cart successfully.");
             }
-
-            response.CartItems = _cartItems;
-            response.TotalPrice = GetTotalPrice();
         }
         catch (Exception ex)
         {
-            response.Response = SubResponseModel.GetResponseMsg($"Error adding perfume to cart: {ex.Message}", false);
+            return Result<CartResponseModel>.FailureResult($"Error adding perfume to cart: {ex.Message}");
         }
-        return response;
     }
 
-    public async Task<CartResponseModel> RemoveFromCart(int perfumeId)
+    public async Task<Result<CartResponseModel>> RemoveFromCart(int perfumeId)
     {
-        var response = new CartResponseModel();
         try
         {
             var itemToRemove = _cartItems.FirstOrDefault(item => item.Perfume.Id == perfumeId);
             if (itemToRemove != null)
             {
                 _cartItems.Remove(itemToRemove);
-                response.CartItems = _cartItems;
-                response.TotalPrice = GetTotalPrice();
-                response.Response = SubResponseModel.GetResponseMsg("Perfume removed from cart successfully.", true);
+                return Result<CartResponseModel>.SuccessResult(GetCartResponse(), "Perfume removed from cart successfully.");
             }
             else
             {
-                response.Response = SubResponseModel.GetResponseMsg("Perfume not found in cart.", false);
+                return Result<CartResponseModel>.FailureResult("Perfume not found in cart.");
             }
         }
         catch (Exception ex)
         {
-            response.Response = SubResponseModel.GetResponseMsg($"Error removing perfume from cart: {ex.Message}", false);
+            return Result<CartResponseModel>.FailureResult($"Error removing perfume from cart: {ex.Message}");
         }
-        return response;
     }
 
-    public async Task<CartResponseModel> UpdateQuantity(int perfumeId, int change)
+    public async Task<Result<CartResponseModel>> UpdateQuantity(int perfumeId, int change)
     {
-        var response = new CartResponseModel();
         try
         {
             var item = _cartItems.FirstOrDefault(item => item.Perfume.Id == perfumeId);
@@ -71,36 +61,38 @@ public class CartService
                     item.Quantity = 1;
                 }
 
-                response.CartItems = _cartItems;
-                response.TotalPrice = GetTotalPrice();
-                response.Response = SubResponseModel.GetResponseMsg("Quantity updated successfully.", true);
+                return Result<CartResponseModel>.SuccessResult(GetCartResponse(), "Quantity updated successfully.");
             }
             else
             {
-                response.Response = SubResponseModel.GetResponseMsg("Perfume not found in cart.", false);
+                return Result<CartResponseModel>.FailureResult("Perfume not found in cart.");
             }
         }
         catch (Exception ex)
         {
-            response.Response = SubResponseModel.GetResponseMsg($"Error updating quantity: {ex.Message}", false);
+            return Result<CartResponseModel>.FailureResult($"Error updating quantity: {ex.Message}");
         }
-        return response;
     }
 
-    public Task<CartResponseModel> GetCartItems()
+    public Task<Result<CartResponseModel>> GetCartItems()
     {
-        var response = new CartResponseModel();
         try
         {
-            response.CartItems = _cartItems;
-            response.TotalPrice = GetTotalPrice();
-            response.Response = SubResponseModel.GetResponseMsg("Cart items retrieved successfully.", true);
+            return Task.FromResult(Result<CartResponseModel>.SuccessResult(GetCartResponse(), "Cart items retrieved successfully."));
         }
         catch (Exception ex)
         {
-            response.Response = SubResponseModel.GetResponseMsg($"Error retrieving cart items: {ex.Message}", false);
+            return Task.FromResult(Result<CartResponseModel>.FailureResult($"Error retrieving cart items: {ex.Message}"));
         }
-        return Task.FromResult(response); 
+    }
+
+    private CartResponseModel GetCartResponse()
+    {
+        return new CartResponseModel
+        {
+            CartItems = _cartItems,
+            TotalPrice = GetTotalPrice()
+        };
     }
 
     private decimal GetTotalPrice()

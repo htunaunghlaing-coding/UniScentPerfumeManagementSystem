@@ -220,56 +220,124 @@
     {
         if (firstRender)
         {
-            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
-            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
-
-            if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+            try
             {
-                Navigation.NavigateTo("/login");
-                return;
-            }
+                _logger.LogInformation("Initializing checkout page.");
 
-            _userSession = await customAuthStateProvider.GetUserData(); 
-            await LoadCartItems(); 
+                var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+                var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+
+                if (authState.User.Identity == null || !authState.User.Identity.IsAuthenticated)
+                {
+                    _logger.LogWarning("User not authenticated. Redirecting to login.");
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+
+                _userSession = await customAuthStateProvider.GetUserData();
+                await LoadCartItems();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while initializing the checkout page.");
+            }
         }
     }
 
     private void NavigateToShop()
     {
-        Navigation.NavigateTo("/shop");
+        try
+        {
+            _logger.LogInformation("Navigating to shop page.");
+            Navigation.NavigateTo("/shop");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while navigating to the shop page.");
+        }
     }
 
     private void SetTips(decimal percentage)
     {
-        tipsPercentage = percentage;
+        try
+        {
+            _logger.LogInformation("Setting tips percentage to {TipsPercentage}%", percentage);
+            tipsPercentage = percentage;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while setting tips percentage.");
+        }
     }
 
     private decimal CalculateSubtotal()
     {
-        return cartItems.Sum(item => item.Perfume.Price * item.Quantity);
+        try
+        {
+            var subtotal = cartItems.Sum(item => item.Perfume.Price * item.Quantity);
+            _logger.LogInformation("Calculated subtotal: ${Subtotal}", subtotal);
+            return subtotal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while calculating the subtotal.");
+            throw;
+        }
     }
 
     private decimal CalculateTips()
     {
-        return CalculateSubtotal() * (tipsPercentage / 100);
+        try
+        {
+            var tips = CalculateSubtotal() * (tipsPercentage / 100);
+            _logger.LogInformation("Calculated tips: ${Tips}", tips);
+            return tips;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while calculating the tips.");
+            throw;
+        }
     }
 
     private decimal CalculateTotalWithTips()
     {
-        return CalculateSubtotal() + CalculateTips();
+        try
+        {
+            var total = CalculateSubtotal() + CalculateTips();
+            _logger.LogInformation("Calculated total with tips: ${Total}", total);
+            return total;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while calculating the total with tips.");
+            throw;
+        }
     }
 
     private async Task ShowConfirmationDialog()
     {
-        var confirmationMessage = @"
+        try
+        {
+            var confirmationMessage = @"
 Are you sure you want to checkout these perfumes?
 ";
 
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", confirmationMessage);
+            _logger.LogInformation("Showing confirmation dialog for order placement.");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", confirmationMessage);
 
-        if (confirmed)
+            if (confirmed)
+            {
+                await PlaceOrder();
+            }
+            else
+            {
+                _logger.LogInformation("User canceled the order confirmation.");
+            }
+        }
+        catch (Exception ex)
         {
-            await PlaceOrder();
+            _logger.LogError(ex, "An unexpected error occurred while showing the confirmation dialog.");
         }
     }
 
@@ -278,6 +346,8 @@ Are you sure you want to checkout these perfumes?
         isLoading = true;
         try
         {
+            _logger.LogInformation("Attempting to place order for user ID: {UserId}", _userSession.UserId);
+
             if (string.IsNullOrEmpty(selectedPaymentMethod.ToString()) ||
                 string.IsNullOrEmpty(cardNumber) ||
                 string.IsNullOrEmpty(expirationDate) ||
@@ -293,6 +363,8 @@ Are you sure you want to checkout these perfumes?
             {
                 responseMessage = "Please fill out all required fields.";
                 isSuccess = false;
+
+                _logger.LogWarning("Order placement failed due to missing required fields.");
                 StateHasChanged();
                 return;
             }
@@ -312,25 +384,33 @@ Are you sure you want to checkout these perfumes?
                     TipsPercentage = tipsPercentage
                 };
 
-            var response = await _checkoutService.ProcessOrderAsync(request);
+            _logger.LogInformation("Processing order for user ID: {UserId}. Total amount: ${TotalAmount}", _userSession.UserId, request.TotalAmount);
 
-            if (response != null && !string.IsNullOrEmpty(response.Message))
+            var result = await _checkoutService.ProcessOrderAsync(request);
+
+            if (result.IsSuccess)
             {
                 responseMessage = "Thanks for shopping our perfumes. Enjoy your scent, Man!";
                 isSuccess = true;
 
                 cartItems.Clear();
+
+                _logger.LogInformation("Order placed successfully for user ID: {UserId}", _userSession.UserId);
             }
             else
             {
-                responseMessage = response?.Message ?? "An unknown error occurred.";
+                responseMessage = result.Message ?? "An unknown error occurred.";
                 isSuccess = false;
+
+                _logger.LogWarning("Order placement failed for user ID: {UserId}. Error: {ErrorMessage}", _userSession.UserId, result.Message);
             }
         }
         catch (Exception ex)
         {
             responseMessage = $"Error placing order: {ex.Message}";
             isSuccess = false;
+
+            _logger.LogError(ex, "An unexpected error occurred while placing the order for user ID: {UserId}", _userSession.UserId);
         }
         finally
         {
@@ -343,17 +423,33 @@ Are you sure you want to checkout these perfumes?
     {
         try
         {
-            var cartResponse = await _cartService.GetCartItems();
-            cartItems = cartResponse.CartItems;
+            _logger.LogInformation("Loading cart items for user ID: {UserId}", _userSession.UserId);
+
+            var result = await _cartService.GetCartItems();
+            if (result.IsSuccess)
+            {
+                cartItems = result.Data.CartItems;
+
+                _logger.LogInformation("Successfully loaded {CartItemCount} cart items for user ID: {UserId}", cartItems.Count, _userSession.UserId);
+            }
+            else
+            {
+                responseMessage = result.Message ?? "Failed to load cart items.";
+                isSuccess = false;
+
+                _logger.LogWarning("Failed to load cart items for user ID: {UserId}. Error: {ErrorMessage}", _userSession.UserId, result.Message);
+            }
         }
         catch (Exception ex)
         {
             responseMessage = $"Error loading cart items: {ex.Message}";
             isSuccess = false;
+
+            _logger.LogError(ex, "An unexpected error occurred while loading cart items for user ID: {UserId}", _userSession.UserId);
         }
         finally
         {
-            StateHasChanged(); 
+            StateHasChanged();
         }
     }
 }

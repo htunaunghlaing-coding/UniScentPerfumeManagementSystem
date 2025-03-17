@@ -1,4 +1,5 @@
 ﻿using UniScentPerfumeManagementSystem.Database.EfModels;
+using UniScentPerfumeManagementSystem.Shared;
 
 namespace UniScentPerfumeManagementSystem.Domain.Features.PerfumeManagement;
 
@@ -11,9 +12,8 @@ public class PerfumeService
         _db = db;
     }
 
-    public async Task<PerfumeResponseModel> GetPerfumeById(int perfumeId)
+    public async Task<Result<PerfumeResponseModel>> GetPerfumeById(int perfumeId)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfume = await _db.TblPerfumes
@@ -41,23 +41,20 @@ public class PerfumeService
 
             if (perfume == null)
             {
-                model.Response = SubResponseModel.GetResponseMsg("No perfume found.", false);
-                return model;
+                return Result<PerfumeResponseModel>.FailureResult("No perfume found.");
             }
 
-            model = MapToResponse(perfume);
-            model.Response = SubResponseModel.GetResponseMsg("Perfume retrieved successfully.", true);
+            var model = MapToResponse(perfume);
+            return Result<PerfumeResponseModel>.SuccessResult(model, "Perfume retrieved successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> GetPerfumesByCategory(string category, PageSettingModel pageSetting)
+    public async Task<Result<PerfumeResponseModel>> GetPerfumesByCategory(string category, PageSettingModel pageSetting)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var query = _db.TblPerfumes
@@ -88,26 +85,27 @@ public class PerfumeService
                 .Take(pageSetting.PageSize)
                 .ToListAsync();
 
-            model.PageSetting = new PageSettingResponseModel
+            var model = new PerfumeResponseModel
             {
-                PageNo = pageSetting.PageNo,
-                RowCount = pageSetting.PageSize,
-                TotalRowCount = totalRowCount
+                PageSetting = new PageSettingResponseModel
+                {
+                    PageNo = pageSetting.PageNo,
+                    RowCount = pageSetting.PageSize,
+                    TotalRowCount = totalRowCount
+                },
+                PerfumeList = perfumes
             };
 
-            model.PerfumeList = perfumes;
-            model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
+            return Result<PerfumeResponseModel>.SuccessResult(model, "Perfumes retrieved successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> GetPerfumesByCategory(string category)
+    public async Task<Result<PerfumeResponseModel>> GetPerfumesByCategory(string category)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfumes = await _db.TblPerfumes
@@ -133,20 +131,21 @@ public class PerfumeService
                 })
                 .ToListAsync();
 
-            model.PerfumeList = perfumes;
-            model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
+            var model = new PerfumeResponseModel
+            {
+                PerfumeList = perfumes
+            };
+
+            return Result<PerfumeResponseModel>.SuccessResult(model, "Perfumes retrieved successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> Create(PerfumeRequestModel requestModel)
+    public async Task<Result<PerfumeResponseModel>> Create(PerfumeRequestModel requestModel)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfume = new TblPerfume
@@ -170,18 +169,16 @@ public class PerfumeService
             await _db.AddAsync(perfume);
             await _db.SaveAndDetachAsync();
 
-            model.Response = SubResponseModel.GetResponseMsg("Perfume created successfully.", true);
+            return Result<PerfumeResponseModel>.SuccessResult(null, "Perfume created successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> Update(PerfumeRequestModel requestModel)
+    public async Task<Result<PerfumeResponseModel>> Update(PerfumeRequestModel requestModel)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfume = await _db.TblPerfumes.AsNoTracking()
@@ -189,8 +186,7 @@ public class PerfumeService
 
             if (perfume == null)
             {
-                model.Response = SubResponseModel.GetResponseMsg("No perfume found.", false);
-                return model;
+                return Result<PerfumeResponseModel>.FailureResult("No perfume found.");
             }
 
             perfume.Name = requestModel.Name;
@@ -211,18 +207,16 @@ public class PerfumeService
             _db.Entry(perfume).State = EntityState.Modified;
             await _db.SaveAndDetachAsync();
 
-            model.Response = SubResponseModel.GetResponseMsg("Perfume updated successfully.", true);
+            return Result<PerfumeResponseModel>.SuccessResult(null, "Perfume updated successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> Delete(int perfumeId)
+    public async Task<Result<PerfumeResponseModel>> Delete(int perfumeId)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfume = await _db.TblPerfumes.AsNoTracking()
@@ -230,25 +224,22 @@ public class PerfumeService
 
             if (perfume == null)
             {
-                model.Response = SubResponseModel.GetResponseMsg("No perfume found.", false);
-                return model;
+                return Result<PerfumeResponseModel>.FailureResult("No perfume found.");
             }
 
             _db.Remove(perfume);
             await _db.SaveChangesAsync();
 
-            model.Response = SubResponseModel.GetResponseMsg("Perfume deleted successfully.", true);
+            return Result<PerfumeResponseModel>.SuccessResult(null, "Perfume deleted successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-        return model;
     }
 
-    public async Task<PerfumeResponseModel> GetPerfumesByGender(string gender)
+    public async Task<Result<PerfumeResponseModel>> GetPerfumesByGender(string gender)
     {
-        var model = new PerfumeResponseModel();
         try
         {
             var perfumes = await _db.TblPerfumes
@@ -274,15 +265,17 @@ public class PerfumeService
                 })
                 .ToListAsync();
 
-            model.PerfumeList = perfumes;
-            model.Response = SubResponseModel.GetResponseMsg("Perfumes retrieved successfully.", true);
+            var model = new PerfumeResponseModel
+            {
+                PerfumeList = perfumes
+            };
+
+            return Result<PerfumeResponseModel>.SuccessResult(model, "Perfumes retrieved successfully.");
         }
         catch (Exception ex)
         {
-            model.Response = SubResponseModel.GetResponseMsg(ex.ToString(), false);
+            return Result<PerfumeResponseModel>.FailureResult(ex.Message);
         }
-
-        return model;
     }
 
     private PerfumeResponseModel MapToResponse(PerfumeDataModel data)
