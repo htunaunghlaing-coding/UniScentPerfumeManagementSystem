@@ -32,9 +32,9 @@ public class CheckoutService
                 UserId = request.UserId,
                 TotalAmount = request.TotalAmount,
                 PaymentMethod = request.PaymentMethod.ToString(),
-                OrderDate = DateTime.UtcNow,
+                OrderDate = DateTime.Now,
                 Status = "Success",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 TblOrderItems = new List<TblOrderItem>(),
                 TblOrderAddresses = new List<TblOrderAddress>()
             };
@@ -59,7 +59,7 @@ public class CheckoutService
                 State = request.BillingAddress.State,
                 PostalCode = request.BillingAddress.PostalCode,
                 PhoneNo = request.BillingAddress.PhoneNo,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             });
 
             await _db.TblOrders.AddAsync(order);

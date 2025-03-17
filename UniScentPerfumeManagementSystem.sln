@@ -11,6 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniScentPerfumeManagementSy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniScentPerfumeManagementSystem.Shared", "UniScentPerfumeManagementSystem.Shared\UniScentPerfumeManagementSystem.Shared.csproj", "{C3BFAD2C-1891-4BED-A9A4-04F272D72D6F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{537630D2-4D29-4531-8A56-7084416AEADE}"
+	ProjectSection(SolutionItems) = preProject
+		Solution\script.sql = Solution\script.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
