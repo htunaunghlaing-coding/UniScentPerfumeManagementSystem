@@ -9,6 +9,5 @@ public class OrderItemDataModel
     public decimal UnitPrice { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // Navigation Properties
     public OrderDataModel Order { get; set; }
 }

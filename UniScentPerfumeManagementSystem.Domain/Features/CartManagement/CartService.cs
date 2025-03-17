@@ -92,7 +92,6 @@ public class CartService
         var response = new CartResponseModel();
         try
         {
-            // Simulate fetching cart items (replace with actual async logic if needed)
             response.CartItems = _cartItems;
             response.TotalPrice = GetTotalPrice();
             response.Response = SubResponseModel.GetResponseMsg("Cart items retrieved successfully.", true);
@@ -101,7 +100,7 @@ public class CartService
         {
             response.Response = SubResponseModel.GetResponseMsg($"Error retrieving cart items: {ex.Message}", false);
         }
-        return Task.FromResult(response); // Wrap the result in a Task
+        return Task.FromResult(response); 
     }
 
     private decimal GetTotalPrice()

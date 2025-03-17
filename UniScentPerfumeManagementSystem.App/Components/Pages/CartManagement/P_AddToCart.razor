@@ -6,7 +6,6 @@
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
-        <!-- Display Success/Error Messages -->
         @if (!string.IsNullOrEmpty(cartResponse.Response?.Message))
         {
             <MudAlert Severity="@(cartResponse.Response.IsSuccess ? Severity.Success : Severity.Error)">
@@ -158,7 +157,6 @@
 
                 _userSession = await customAuthStateProvider.GetUserData();
 
-                // Load cart items
                 cartResponse = await CartService.GetCartItems();
                 StateHasChanged();
             }
@@ -173,7 +171,7 @@
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, 1).Result; // Synchronous call
+            cartResponse = CartService.UpdateQuantity(perfumeId, 1).Result; 
             StateHasChanged();
         }
         catch (Exception ex)
@@ -186,7 +184,7 @@
     {
         try
         {
-            cartResponse = CartService.UpdateQuantity(perfumeId, -1).Result; // Synchronous call
+            cartResponse = CartService.UpdateQuantity(perfumeId, -1).Result; 
             StateHasChanged();
         }
         catch (Exception ex)
@@ -199,7 +197,7 @@
     {
         try
         {
-            cartResponse = CartService.RemoveFromCart(perfumeId).Result; // Synchronous call
+            cartResponse = CartService.RemoveFromCart(perfumeId).Result; 
             StateHasChanged();
         }
         catch (Exception ex)

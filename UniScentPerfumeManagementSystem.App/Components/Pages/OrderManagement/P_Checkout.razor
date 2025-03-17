@@ -10,7 +10,6 @@
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Class="pa-4">
-        <!-- Display Success/Error Messages -->
         @if (!string.IsNullOrEmpty(responseMessage))
         {
             <MudAlert Severity="@(isSuccess ? Severity.Success : Severity.Error)">
@@ -19,7 +18,6 @@
         }
 
         <MudGrid>
-            <!-- Left Side: Payment Details -->
             <MudItem xs="12" md="6">
                 <MudText Typo="Typo.h5" Class="mb-4">Payment Details</MudText>
 
@@ -66,7 +64,6 @@
                 </div>
             </MudItem>
 
-            <!-- Right Side: Cart Summary -->
             <MudItem xs="12" md="6">
                 <MudText Typo="Typo.h5" Class="mb-4">Order Summary</MudText>
 
@@ -122,7 +119,6 @@
 </MudContainer>
 
 <style>
-    /* Styling for the cart items */
     .cart-item {
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -132,7 +128,6 @@
         margin-top: 1.5rem;
     }
 
-    /* Styling for the perfume image */
     .perfume-image {
         width: 100px;
         height: 100px;
@@ -141,29 +136,26 @@
         position: relative;
     }
 
-    /* Styling for the quantity circle in the top-right corner */
     .quantity-circle-top {
         position: absolute;
-        top: 1.5px; /* Moved even closer to the image */
+        top: 1.5px; 
         width: 24px;
         height: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #333; /* Darker grey color */
+        background-color: #333; 
         color: white;
         border-radius: 50%;
-        font-size: 0.8rem; /* Slightly smaller font size */
+        font-size: 0.8rem; 
         font-weight: bold;
     }
 
-    /* Styling for the perfume name */
     .perfume-name {
-        font-size: 1rem; /* Adjust font size to match image size */
+        font-size: 1rem; 
         font-weight: bold;
     }
 
-    /* Styling for the price summary */
     .price-summary {
         margin-top: 1rem;
     }
@@ -178,38 +170,35 @@
         color: #333;
     }
 
-    /* Styling for the tips container */
     .tips-container {
         display: flex;
-        gap: 8px; /* Space between buttons */
+        gap: 8px; 
         align-items: center;
     }
 
-    /* Base styling for the tip buttons */
+    
     .tip-button {
-        background-color: black; /* Black background */
-        color: white; /* White text */
-        border: none; /* Remove default button border */
-        border-radius: 20px; /* Rounded corners */
-        padding: 8px 16px; /* Padding for better touch target */
-        font-size: 0.9rem; /* Slightly larger font size */
-        font-weight: bold; /* Bold text */
-        cursor: pointer; /* Pointer cursor on hover */
-        transition: all 0.2s ease; /* Smooth transitions */
+        background-color: black; 
+        color: white;
+        border: none; 
+        border-radius: 20px; 
+        padding: 8px 16px; 
+        font-size: 0.9rem; 
+        font-weight: bold;
+        cursor: pointer; 
+        transition: all 0.2s ease; 
     }
 
-        /* Hover effect for the tip buttons */
         .tip-button:hover {
-            background-color: #444; /* Lighter shade on hover */
-            transform: scale(1.05); /* Slightly enlarge on hover */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            background-color: #444; 
+            transform: scale(1.05); 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
         }
 
-        /* Active state for the tip buttons */
         .tip-button:active {
-            background-color: #333; /* Darker shade when clicked */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger shadow */
-            transform: scale(0.95); /* Slightly shrink when pressed */
+            background-color: #333; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+            transform: scale(0.95);
         }
 </style>
 
@@ -240,8 +229,8 @@
                 return;
             }
 
-            _userSession = await customAuthStateProvider.GetUserData(); // Populate UserSessionModel
-            await LoadCartItems(); // Load cart items
+            _userSession = await customAuthStateProvider.GetUserData(); 
+            await LoadCartItems(); 
         }
     }
 
@@ -289,7 +278,6 @@ Are you sure you want to checkout these perfumes?
         isLoading = true;
         try
         {
-            // Validate all required fields
             if (string.IsNullOrEmpty(selectedPaymentMethod.ToString()) ||
                 string.IsNullOrEmpty(cardNumber) ||
                 string.IsNullOrEmpty(expirationDate) ||
@@ -309,7 +297,6 @@ Are you sure you want to checkout these perfumes?
                 return;
             }
 
-            // Prepare the order request
             var request = new OrderRequestModel
                 {
                     UserId = _userSession.UserId,
@@ -325,16 +312,13 @@ Are you sure you want to checkout these perfumes?
                     TipsPercentage = tipsPercentage
                 };
 
-            // Process the order using the CheckoutService
             var response = await _checkoutService.ProcessOrderAsync(request);
 
-            // Handle the response
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
                 responseMessage = "Thanks for shopping our perfumes. Enjoy your scent, Man!";
                 isSuccess = true;
 
-                // Clear the cart after successful order placement
                 cartItems.Clear();
             }
             else
@@ -360,7 +344,7 @@ Are you sure you want to checkout these perfumes?
         try
         {
             var cartResponse = await _cartService.GetCartItems();
-            cartItems = cartResponse.CartItems; // Assign cart items to the local variable
+            cartItems = cartResponse.CartItems;
         }
         catch (Exception ex)
         {
@@ -369,7 +353,7 @@ Are you sure you want to checkout these perfumes?
         }
         finally
         {
-            StateHasChanged(); // Ensure the UI is updated after loading cart items
+            StateHasChanged(); 
         }
     }
 }

@@ -12,10 +12,8 @@ public class CheckoutService
         _db = db;
     }
 
-    // Process the order and save it with "Success" status
     public async Task<OrderResponseModel?> ProcessOrderAsync(OrderRequestModel request)
     {
-        // Validate the request
         if (request.Items == null || !request.Items.Any())
         {
             Console.WriteLine("Order must contain at least one item.");
@@ -30,20 +28,18 @@ public class CheckoutService
 
         try
         {
-            // Create the order object
             var order = new TblOrder
             {
                 UserId = request.UserId,
                 TotalAmount = request.TotalAmount,
                 PaymentMethod = request.PaymentMethod.ToString(),
                 OrderDate = DateTime.UtcNow,
-                Status = "Success", // Set status to "Success" immediately
+                Status = "Success", 
                 CreatedAt = DateTime.UtcNow,
-                TblOrderItems = new List<TblOrderItem>(), // Initialize collection
-                TblOrderAddresses = new List<TblOrderAddress>() // Initialize collection
+                TblOrderItems = new List<TblOrderItem>(), 
+                TblOrderAddresses = new List<TblOrderAddress>() 
             };
 
-            // Add order items
             foreach (var item in request.Items)
             {
                 order.TblOrderItems.Add(new TblOrderItem
@@ -54,7 +50,6 @@ public class CheckoutService
                 });
             }
 
-            // Add billing address
             order.TblOrderAddresses.Add(new TblOrderAddress
             {
                 Country = request.BillingAddress.Country,
@@ -68,24 +63,21 @@ public class CheckoutService
                 CreatedAt = DateTime.UtcNow
             });
 
-            // Save the order to the database
             await _db.TblOrders.AddAsync(order);
-            await _db.SaveChangesAsync(); // This should cascade changes to related entities
+            await _db.SaveChangesAsync(); 
 
-            // Populate the response model
             return new OrderResponseModel
             {
                 OrderId = order.Id,
                 UserId = order.UserId,
                 TotalAmount = order.TotalAmount,
                 PaymentMethod = request.PaymentMethod,
-                Status = order.Status, // "Success"
+                Status = order.Status, 
                 Message = "Order placed successfully."
             };
         }
         catch (Exception ex)
         {
-            // Log the exception (optional)
             Console.WriteLine($"Error placing order: {ex.Message}");
             return null;
         }
